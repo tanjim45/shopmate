@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/products/screens/order_success_screen.dart';
+import '../../../database/order_database.dart';
+import '../models/order_model.dart';
 
 import '../providers/cart_provider.dart';
 
@@ -19,7 +21,81 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _phoneController = TextEditingController();
   final _addressController = TextEditingController();
 
+  bool _isPlacingOrder = false;
+
   String _deliveryMethod = 'Standard Delivery';
+
+  
+      Future<void> _placeOrder() async {
+        if (!_formKey.currentState!.validate()) return;
+
+        final cartItems = ref.read(cartProvider);
+        if (cartItems.isEmpty) return;
+
+        setState(() {
+          _isPlacingOrder = true;
+        });
+
+        try {
+          const deliveryFee = 5.00;
+
+          final subtotal = cartItems.fold<double>(
+            0.0,
+            (sum, item) => sum + item.product.price * item.quantity,
+          );
+
+          final orderItems = cartItems.map((item) {
+            return OrderItem(
+              productId: item.product.id,
+              title: item.product.title,
+              price: item.product.price,
+              quantity: item.quantity,
+              thumbnail: item.product.image,
+            );
+          }).toList();
+
+          final order = OrderModel(
+            customerName: _nameController.text.trim(),
+            phone: _phoneController.text.trim(),
+            address: _addressController.text.trim(),
+            deliveryMethod: _deliveryMethod,
+            subtotal: subtotal,
+            deliveryFee: deliveryFee,
+            total: subtotal + deliveryFee,
+            status: 'Placed',
+            createdAt: DateTime.now(),
+            items: orderItems,
+          );
+
+          await OrderDatabase.instance.saveOrder(order);
+
+          if (!mounted) return;
+
+          ref.read(cartProvider.notifier).clearCart();
+
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => const OrderSuccessScreen(),
+            ),
+          );
+        } catch (e) {
+          if (!mounted) return;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to place order: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } finally {
+          if (mounted) {
+            setState(() {
+              _isPlacingOrder = false;
+            });
+          }
+        }
+      }
+
 
   @override
   void dispose() {
@@ -244,19 +320,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton.icon(
-                      onPressed: () {
-                                      if (!_formKey.currentState!.validate()) {
-                                        return;
-                                      }
+                      onPressed: _isPlacingOrder ? null : _placeOrder,
 
-                                      Navigator.of(context).pushReplacement(
-                                        MaterialPageRoute(
-                                          builder: (_) => const OrderSuccessScreen(),
-                                        ),
-                                      );
-                                    },
+
                       icon: const Icon(Icons.check_circle_outline),
-                      label: const Text('Place Order'),
+                      label: Text( _isPlacingOrder ? 'Placing Order...' : 'Place Order',
+                      ),
                       style: FilledButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           vertical: 17,

@@ -1,11 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import 'package:shopmate/features/products/providers/cart_provider.dart';
 import 'package:shopmate/features/products/screens/cart_screen.dart';
+import 'package:shopmate/features/products/screens/order_history_screen.dart';
 import 'package:shopmate/features/products/screens/wishlist_screen.dart';
-
 import '../models/product_model.dart';
 import '../providers/product_provider.dart';
 import '../providers/wishlist_provider.dart';
@@ -138,6 +136,19 @@ class _ProductListScreenState
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+          IconButton(
+            tooltip: 'My Orders',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const OrderHistoryScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.receipt_long_outlined),
+          ),
+
+
           IconButton(
             tooltip: 'My Wishlist',
             onPressed: () {
