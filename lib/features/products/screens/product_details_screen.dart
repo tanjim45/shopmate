@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopmate/features/products/screens/cart_screen.dart';
 import '../models/product_model.dart';
 import '../providers/cart_provider.dart';
 import '../providers/wishlist_provider.dart';
@@ -217,8 +218,12 @@ class ProductDetailsScreen extends ConsumerWidget {
                         action: SnackBarAction(
                           label: 'View Cart',
                           onPressed: () {
-                            Navigator.of(context).pop();
-                          },
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const CartScreen(),
+                            ),
+                          );
+                        },
                         ),
                       ),
                     );

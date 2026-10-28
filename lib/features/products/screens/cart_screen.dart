@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopmate/features/products/screens/checkout_screen.dart';
 import '../providers/cart_provider.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -113,15 +114,21 @@ class CartScreen extends ConsumerWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                width: 88,
-                                height: 110,
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.surfaceContainerHighest
-                                      .withValues(alpha: 0.4),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
+                              
+                                        Container(
+                                          width: 96,
+                                          height: 116,
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color: theme.colorScheme.surfaceContainerHighest
+                                                .withValues(alpha: 0.5),
+                                            borderRadius: BorderRadius.circular(16),
+                                            border: Border.all(
+                                              color: theme.colorScheme.outlineVariant
+                                                  .withValues(alpha: 0.5),
+                                            ),
+                                          ),
+
                                 child: Image.network(
                                   product.image,
                                   fit: BoxFit.contain,
@@ -165,19 +172,22 @@ class CartScreen extends ConsumerWidget {
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        IconButton(
-                                          onPressed: () {
-                                            cartController.decreaseQuantity(
-                                              product.id,
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.remove_circle_outline,
-                                          ),
-                                          tooltip: 'Decrease quantity',
-                                          visualDensity: VisualDensity.compact,
-                                        ),
-                                        Text(
+                                       
+                                            IconButton.filledTonal(
+                                              onPressed: () {
+                                                cartController.decreaseQuantity(product.id);
+                                              },
+                                              icon: const Icon(Icons.remove, size: 18),
+                                              tooltip: 'Decrease quantity',
+                                              visualDensity: VisualDensity.compact,
+                                              constraints: const BoxConstraints(
+                                                minWidth: 36,
+                                                minHeight: 36,
+                                              ),
+                                              padding: EdgeInsets.zero,
+                                            ),
+
+                                      Text(
                                           '${item.quantity}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
@@ -263,39 +273,61 @@ class CartScreen extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 10),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Total Price',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '\$${cartController.totalPrice.toStringAsFixed(2)}',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ),
-                          ],
-                        ),
+                        
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(16),
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primaryContainer
+                                          .withValues(alpha: 0.45),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'Total Price',
+                                                style: theme.textTheme.titleMedium?.copyWith(
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Your order total',
+                                                style: theme.textTheme.bodySmall?.copyWith(
+                                                  color: theme.colorScheme.onSurfaceVariant,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '\$${cartController.totalPrice.toStringAsFixed(2)}',
+                                          style: theme.textTheme.headlineSmall?.copyWith(
+                                            fontWeight: FontWeight.bold,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
                         const SizedBox(height: 18),
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                            onPressed: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Checkout feature amra pore add korbo!',
+                           onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const CheckoutScreen(),
                                   ),
-                                ),
-                              );
-                            },
+                                );
+                              },
                             icon: const Icon(Icons.shopping_bag_outlined),
                             label: const Text('Proceed to Checkout'),
                             style: FilledButton.styleFrom(
