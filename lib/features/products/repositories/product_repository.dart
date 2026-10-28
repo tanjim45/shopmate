@@ -12,4 +12,10 @@ class ProductRepository {
   Future<List<Product>> getProducts() {
     return _productService.fetchProducts();
   }
+
+  Future<List<Product>> getProductsByLimit(int limit) {
+    return _productService.fetchProducts(
+      limit: limit,
+    );
+  }
 }

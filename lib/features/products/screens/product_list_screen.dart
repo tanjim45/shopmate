@@ -27,6 +27,7 @@ class _ProductListScreenState
   String _searchQuery = '';
   String _selectedCategory = 'All';
   String _selectedSort = 'Default';
+  String? _priceFilterError;
 
   @override
   void dispose() {
@@ -140,18 +141,23 @@ class _ProductListScreenState
             return matchesSearch && matchesCategory;
           }).toList();
 
-          final minPrice = double.tryParse(_minPriceController.text);
-          final maxPrice = double.tryParse(_maxPriceController.text);
+          final minPrice =
+              double.tryParse(_minPriceController.text.trim());
+          final maxPrice =
+              double.tryParse(_maxPriceController.text.trim());
 
-           filteredProducts = products.where((product) {
-            final matchesMinPrice =
-                minPrice == null || product.price >= minPrice;
+          // Apply price filtering only when the entered values are valid.
+          // Keep the previous search and category filtering intact.
+          if (_priceFilterError == null) {
+            filteredProducts = filteredProducts.where((product) {
+              final matchesMinPrice =
+                  minPrice == null || product.price >= minPrice;
+              final matchesMaxPrice =
+                  maxPrice == null || product.price <= maxPrice;
 
-            final matchesMaxPrice =
-                maxPrice == null || product.price <= maxPrice;
-
-            return matchesMinPrice && matchesMaxPrice;
-          }).toList();
+              return matchesMinPrice && matchesMaxPrice;
+            }).toList();
+          }
 
 
 
@@ -315,7 +321,35 @@ class _ProductListScreenState
                                       IconButton.filled(
                                         tooltip: 'Apply Price Filter',
                                         onPressed: () {
-                                          setState(() {});
+                                          final minText =
+                                              _minPriceController.text.trim();
+                                          final maxText =
+                                              _maxPriceController.text.trim();
+                                          final minPrice =
+                                              double.tryParse(minText);
+                                          final maxPrice =
+                                              double.tryParse(maxText);
+
+                                          String? error;
+
+                                          if (minText.isNotEmpty &&
+                                              (minPrice == null || minPrice < 0)) {
+                                            error =
+                                                'Enter a valid minimum price.';
+                                          } else if (maxText.isNotEmpty &&
+                                              (maxPrice == null || maxPrice < 0)) {
+                                            error =
+                                                'Enter a valid maximum price.';
+                                          } else if (minPrice != null &&
+                                              maxPrice != null &&
+                                              minPrice > maxPrice) {
+                                            error =
+                                                'Minimum price cannot exceed maximum price.';
+                                          }
+
+                                          setState(() {
+                                            _priceFilterError = error;
+                                          });
                                         },
                                         icon: const Icon(Icons.filter_alt),
                                       ),
@@ -323,13 +357,32 @@ class _ProductListScreenState
                                             onPressed: () {
                                               _minPriceController.clear();
                                               _maxPriceController.clear();
-                                              setState(() {});
+                                              setState(() {
+                                                _priceFilterError = null;
+                                              });
                                             },
                                             child: const Text('Reset'),
                                           ),
                                   ],
                                   ),
                                 ),
+                        if (_priceFilterError != null)
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _priceFilterError!,
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.error,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
 
                         const SizedBox(height: 12),
 
