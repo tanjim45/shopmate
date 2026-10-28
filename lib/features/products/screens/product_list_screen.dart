@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:shopmate/features/products/providers/cart_provider.dart';
 import 'package:shopmate/features/products/screens/cart_screen.dart';
 import 'package:shopmate/features/products/screens/wishlist_screen.dart';
@@ -20,9 +21,13 @@ class ProductListScreen extends ConsumerStatefulWidget {
 
 class _ProductListScreenState
     extends ConsumerState<ProductListScreen> {
-  final TextEditingController _searchController = TextEditingController();
-  final TextEditingController _minPriceController =TextEditingController();
-  final TextEditingController _maxPriceController =TextEditingController();
+  final TextEditingController _searchController =
+      TextEditingController();
+  final TextEditingController _minPriceController =
+      TextEditingController();
+  final TextEditingController _maxPriceController =
+      TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   String _searchQuery = '';
   String _selectedCategory = 'All';
@@ -30,7 +35,23 @@ class _ProductListScreenState
   String? _priceFilterError;
 
   @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+
+    if (_scrollController.position.extentAfter < 300) {
+      ref.read(productsPaginationProvider.notifier).loadMore();
+    }
+  }
+
+  @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.dispose();
     _minPriceController.dispose();
     _maxPriceController.dispose();
@@ -39,14 +60,76 @@ class _ProductListScreenState
 
   @override
   Widget build(BuildContext context) {
-    final productsAsync = ref.watch(productsProvider);
+    final paginationState = ref.watch(productsPaginationProvider);
     final cartItems = ref.watch(cartProvider);
+    final wishlistIds = ref.watch(wishlistProvider);
 
     final cartCount = cartItems.fold<int>(
       0,
       (total, item) => total + item.quantity,
     );
-    final wishlistCount = ref.watch(wishlistProvider).length;
+    final wishlistCount = wishlistIds.length;
+
+    final products = paginationState.products;
+
+    final categories = <String>[
+      'All',
+      ...products.map((product) => product.category).toSet(),
+    ];
+
+    var filteredProducts = products.where((product) {
+      final matchesSearch =
+          product.title.toLowerCase().contains(_searchQuery);
+
+      final matchesCategory = _selectedCategory == 'All' ||
+          product.category == _selectedCategory;
+
+      return matchesSearch && matchesCategory;
+    }).toList();
+
+    final minPrice =
+        double.tryParse(_minPriceController.text.trim());
+    final maxPrice =
+        double.tryParse(_maxPriceController.text.trim());
+
+    if (_priceFilterError == null) {
+      filteredProducts = filteredProducts.where((product) {
+        final matchesMinPrice =
+            minPrice == null || product.price >= minPrice;
+        final matchesMaxPrice =
+            maxPrice == null || product.price <= maxPrice;
+
+        return matchesMinPrice && matchesMaxPrice;
+      }).toList();
+    }
+
+    switch (_selectedSort) {
+      case 'Price: Low to High':
+        filteredProducts.sort(
+          (a, b) => a.price.compareTo(b.price),
+        );
+        break;
+
+      case 'Price: High to Low':
+        filteredProducts.sort(
+          (a, b) => b.price.compareTo(a.price),
+        );
+        break;
+
+      case 'Rating: Highest First':
+        filteredProducts.sort(
+          (a, b) => b.rating.compareTo(a.rating),
+        );
+        break;
+
+      case 'Name: A to Z':
+        filteredProducts.sort(
+          (a, b) => a.title.toLowerCase().compareTo(
+                b.title.toLowerCase(),
+              ),
+        );
+        break;
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -55,7 +138,6 @@ class _ProductListScreenState
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-        
           IconButton(
             tooltip: 'My Wishlist',
             onPressed: () {
@@ -90,369 +172,441 @@ class _ProductListScreenState
             ),
           ),
         ],
-
       ),
-      body: productsAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(),
-        ),
-        error: (error, stackTrace) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(
-                  Icons.cloud_off_outlined,
-                  size: 64,
-                  color: Colors.grey,
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Products load kora jayni!',
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                FilledButton.icon(
-                  onPressed: () {
-                    ref.invalidate(productsProvider);
-                  },
-                  icon: const Icon(Icons.refresh),
-                  label: const Text('Try Again'),
-                ),
-              ],
-            ),
-          ),
-        ),
-        data: (products) {
-          final categories = [
-            'All',
-            ...products.map((product) => product.category).toSet(),
-          ];
-
-          var filteredProducts = products.where((product) {
-            final matchesSearch = product.title
-                .toLowerCase()
-                .contains(_searchQuery);
-
-            final matchesCategory = _selectedCategory == 'All' ||
-                product.category == _selectedCategory;
-
-            return matchesSearch && matchesCategory;
-          }).toList();
-
-          final minPrice =
-              double.tryParse(_minPriceController.text.trim());
-          final maxPrice =
-              double.tryParse(_maxPriceController.text.trim());
-
-          // Apply price filtering only when the entered values are valid.
-          // Keep the previous search and category filtering intact.
-          if (_priceFilterError == null) {
-            filteredProducts = filteredProducts.where((product) {
-              final matchesMinPrice =
-                  minPrice == null || product.price >= minPrice;
-              final matchesMaxPrice =
-                  maxPrice == null || product.price <= maxPrice;
-
-              return matchesMinPrice && matchesMaxPrice;
-            }).toList();
-          }
-
-
-
-
-
-                  switch (_selectedSort) {
-          case 'Price: Low to High':
-            filteredProducts.sort(
-              (a, b) => a.price.compareTo(b.price),
-            );
-            break;
-
-          case 'Price: High to Low':
-            filteredProducts.sort(
-              (a, b) => b.price.compareTo(a.price),
-            );
-            break;
-
-          case 'Rating: Highest First':
-            filteredProducts.sort(
-              (a, b) => b.rating.compareTo(a.rating),
-            );
-            break;
-
-          case 'Name: A to Z':
-            filteredProducts.sort(
-              (a, b) => a.title.toLowerCase().compareTo(
-                    b.title.toLowerCase(),
-                  ),
-            );
-            break;
-        }
-
-        
-
-          return Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value.trim().toLowerCase();
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search products...',
-                    prefixIcon: const Icon(Icons.search),
-                    suffixIcon: _searchQuery.isNotEmpty
-                        ? IconButton(
-                            onPressed: () {
-                              _searchController.clear();
-                              setState(() {
-                                _searchQuery = '';
-                              });
-                            },
-                            icon: const Icon(Icons.close),
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Theme.of(context)
-                        .colorScheme
-                        .surfaceContainerHighest
-                        .withValues(alpha: 0.4),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-                      borderSide: BorderSide.none,
+      body: products.isEmpty && paginationState.isLoadingMore
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : products.isEmpty && paginationState.errorMessage != null
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.cloud_off_outlined,
+                          size: 56,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 12),
+                       Text(
+                              'Oops! Could not load products.',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Please check your internet connection and try again.',
+                              textAlign: TextAlign.center,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                        const SizedBox(height: 16),
+                        FilledButton.icon(
+                          onPressed: () {
+                            ref
+                                .read(productsPaginationProvider.notifier)
+                                .retry();
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Try Again'),
+                        ),
+                      ],
                     ),
                   ),
-                ),
-              ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.sort),
-                              const SizedBox(width: 8),
-                              const Text('Sort by:'),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: DropdownButtonFormField<String>(
-                                  initialValue: _selectedSort,
-                                  isExpanded: true,
-                                  decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  items: const [
-                                    DropdownMenuItem(
-                                      value: 'Default',
-                                      child: Text('Default'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'Price: Low to High',
-                                      child: Text('Price: Low to High'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'Price: High to Low',
-                                      child: Text('Price: High to Low'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'Rating: Highest First',
-                                      child: Text('Rating: Highest First'),
-                                    ),
-                                    DropdownMenuItem(
-                                      value: 'Name: A to Z',
-                                      child: Text('Name: A to Z'),
-                                    ),
-                                  ],
-                                  onChanged: (value) {
-                                    if (value == null) return;
-
+                )
+              : Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        16,
+                        8,
+                        16,
+                        12,
+                      ),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (value) {
+                          setState(() {
+                            _searchQuery =
+                                value.trim().toLowerCase();
+                          });
+                        },
+                        decoration: InputDecoration(
+                          hintText: 'Search products...',
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchQuery.isNotEmpty
+                              ? IconButton(
+                                  onPressed: () {
+                                    _searchController.clear();
                                     setState(() {
-                                      _selectedSort = value;
+                                      _searchQuery = '';
                                     });
                                   },
-                                ),
-                              ),
-                            ],
+                                  icon: const Icon(Icons.close),
+                                )
+                              : null,
+                          filled: true,
+                          fillColor: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest
+                              .withValues(alpha: 0.4),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
                           ),
                         ),
-                    const SizedBox(height: 12),
-                        Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _minPriceController,
-                                          keyboardType: const TextInputType.numberWithOptions(
-                                            decimal: true,
-                                          ),
-                                          decoration: const InputDecoration(
-                                            labelText: 'Min Price',
-                                            prefixText: '\$ ',
-                                            border: OutlineInputBorder(),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _maxPriceController,
-                                          keyboardType: const TextInputType.numberWithOptions(
-                                            decimal: true,
-                                          ),
-                                          decoration: const InputDecoration(
-                                            labelText: 'Max Price',
-                                            prefixText: '\$ ',
-                                            border: OutlineInputBorder(),
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      IconButton.filled(
-                                        tooltip: 'Apply Price Filter',
-                                        onPressed: () {
-                                          final minText =
-                                              _minPriceController.text.trim();
-                                          final maxText =
-                                              _maxPriceController.text.trim();
-                                          final minPrice =
-                                              double.tryParse(minText);
-                                          final maxPrice =
-                                              double.tryParse(maxText);
+                      ),
+                    ),
 
-                                          String? error;
-
-                                          if (minText.isNotEmpty &&
-                                              (minPrice == null || minPrice < 0)) {
-                                            error =
-                                                'Enter a valid minimum price.';
-                                          } else if (maxText.isNotEmpty &&
-                                              (maxPrice == null || maxPrice < 0)) {
-                                            error =
-                                                'Enter a valid maximum price.';
-                                          } else if (minPrice != null &&
-                                              maxPrice != null &&
-                                              minPrice > maxPrice) {
-                                            error =
-                                                'Minimum price cannot exceed maximum price.';
-                                          }
-
-                                          setState(() {
-                                            _priceFilterError = error;
-                                          });
-                                        },
-                                        icon: const Icon(Icons.filter_alt),
-                                      ),
-                                      TextButton(
-                                            onPressed: () {
-                                              _minPriceController.clear();
-                                              _maxPriceController.clear();
-                                              setState(() {
-                                                _priceFilterError = null;
-                                              });
-                                            },
-                                            child: const Text('Reset'),
-                                          ),
-                                  ],
+                    // Sorting
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.sort),
+                          const SizedBox(width: 8),
+                          const Text('Sort by:'),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              initialValue: _selectedSort,
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                contentPadding:
+                                    const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.circular(12),
+                                ),
+                              ),
+                              items: const [
+                                DropdownMenuItem(
+                                  value: 'Default',
+                                  child: Text('Default'),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Price: Low to High',
+                                  child: Text(
+                                    'Price: Low to High',
                                   ),
                                 ),
-                        if (_priceFilterError != null)
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                _priceFilterError!,
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.error,
-                                  fontSize: 13,
+                                DropdownMenuItem(
+                                  value: 'Price: High to Low',
+                                  child: Text(
+                                    'Price: High to Low',
+                                  ),
                                 ),
+                                DropdownMenuItem(
+                                  value: 'Rating: Highest First',
+                                  child: Text(
+                                    'Rating: Highest First',
+                                  ),
+                                ),
+                                DropdownMenuItem(
+                                  value: 'Name: A to Z',
+                                  child: Text('Name: A to Z'),
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value == null) return;
+                                setState(() {
+                                  _selectedSort = value;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Price filter
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: TextField(
+                              controller: _minPriceController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: 'Min Price',
+                                prefixText: '\$ ',
+                                border: OutlineInputBorder(),
                               ),
                             ),
                           ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: TextField(
+                              controller: _maxPriceController,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              decoration: const InputDecoration(
+                                labelText: 'Max Price',
+                                prefixText: '\$ ',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          IconButton.filled(
+                            tooltip: 'Apply Price Filter',
+                            onPressed: () {
+                              final minText =
+                                  _minPriceController.text.trim();
+                              final maxText =
+                                  _maxPriceController.text.trim();
 
-                        const SizedBox(height: 12),
+                              final min =
+                                  double.tryParse(minText);
+                              final max =
+                                  double.tryParse(maxText);
 
-              SizedBox(
-                height: 48,
-                child: ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  separatorBuilder: (_, index) =>
-                      const SizedBox(width: 8),
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    final isSelected = category == _selectedCategory;
+                              String? error;
 
-                    return ChoiceChip(
-                      label: Text(
-                        category == 'All'
-                            ? 'All'
-                            : category[0].toUpperCase() +
-                                category.substring(1),
+                              if (minText.isNotEmpty &&
+                                  (min == null || min < 0)) {
+                                error =
+                                    'Enter a valid minimum price.';
+                              } else if (maxText.isNotEmpty &&
+                                  (max == null || max < 0)) {
+                                error =
+                                    'Enter a valid maximum price.';
+                              } else if (min != null &&
+                                  max != null &&
+                                  min > max) {
+                                error =
+                                    'Minimum price cannot exceed maximum price.';
+                              }
+
+                              setState(() {
+                                _priceFilterError = error;
+                              });
+                            },
+                            icon: const Icon(Icons.filter_alt),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              _minPriceController.clear();
+                              _maxPriceController.clear();
+
+                              setState(() {
+                                _priceFilterError = null;
+                              });
+                            },
+                            child: const Text('Reset'),
+                          ),
+                        ],
                       ),
-                      selected: isSelected,
-                      onSelected: (_) {
-                        setState(() {
-                          _selectedCategory = category;
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: filteredProducts.isEmpty
-                    ? const Center(
-                        child: Text('No products found'),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: () async {
-                          ref.invalidate(productsProvider);
-                          await ref.read(productsProvider.future);
-                        },
-                        child: GridView.builder(
-                          padding: const EdgeInsets.fromLTRB(
-                            16,
-                            0,
-                            16,
-                            16,
+                    ),
+
+                    if (_priceFilterError != null)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _priceFilterError!,
+                            style: TextStyle(
+                              color:
+                                  Theme.of(context).colorScheme.error,
+                              fontSize: 13,
+                            ),
                           ),
-                          gridDelegate:
-                              const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 240,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            mainAxisExtent: 315,
-                          ),
-                          itemCount: filteredProducts.length,
-                          itemBuilder: (context, index) {
-                            return ProductCard(
-                              product: filteredProducts[index],
-                            );
-                          },
                         ),
                       ),
-              ),
-            ],
-          );
-        },
-      ),
+
+                    const SizedBox(height: 12),
+
+                    // Category filter
+                    SizedBox(
+                      height: 48,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                        ),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categories.length,
+                        separatorBuilder: (_, index) =>
+                            const SizedBox(width: 8),
+                        itemBuilder: (context, index) {
+                          final category = categories[index];
+
+                          return ChoiceChip(
+                            label: Text(
+                              category == 'All'
+                                  ? 'All'
+                                  : '${category[0].toUpperCase()}${category.substring(1)}',
+                            ),
+                            selected:
+                                category == _selectedCategory,
+                            onSelected: (_) {
+                              setState(() {
+                                _selectedCategory = category;
+                              });
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // Infinite scroll product grid
+                  Expanded(
+                    child: filteredProducts.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.search_off_rounded,
+                                  size: 70,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  products.isEmpty
+                                      ? 'No products available'
+                                      : 'No products found',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleMedium,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  products.isEmpty
+                                      ? 'Please try again later.'
+                                      : 'Try another search or change filters.',
+                                  textAlign: TextAlign.center,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium,
+                                ),
+                                if (products.isNotEmpty) ...[
+                                  const SizedBox(height: 16),
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      _searchController.clear();
+                                      setState(() {
+                                        // Search text reset
+                                      });
+                                    },
+                                    icon: const Icon(Icons.refresh),
+                                    label: const Text('Clear Search'),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          )
+                        : RefreshIndicator(
+                            onRefresh: () async {
+                              await ref
+                                  .read(productsPaginationProvider.notifier)
+                                  .loadInitial();
+                            },
+                              child: GridView.builder(
+                                controller: _scrollController,
+                                physics:
+                                    const AlwaysScrollableScrollPhysics(),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  0,
+                                  16,
+                                  16,
+                                ),
+                                gridDelegate:
+                                    const SliverGridDelegateWithMaxCrossAxisExtent(
+                                  maxCrossAxisExtent: 240,
+                                  mainAxisSpacing: 16,
+                                  crossAxisSpacing: 16,
+                                  mainAxisExtent: 315,
+                                ),
+                                itemCount: filteredProducts.length +
+                                    ((paginationState.hasMore ||
+                                            paginationState.isLoadingMore ||
+                                            paginationState.errorMessage !=
+                                                null)
+                                        ? 1
+                                        : 0),
+                                itemBuilder: (context, index) {
+                                  if (index >=
+                                      filteredProducts.length) {
+                                    if (paginationState.errorMessage !=
+                                        null) {
+                                      return Center(
+                                        child: Column(
+                                          mainAxisSize:
+                                              MainAxisSize.min,
+                                          children: [
+                                            const Text(
+                                              'Could not load more products',
+                                              textAlign:
+                                                  TextAlign.center,
+                                            ),
+                                            TextButton.icon(
+                                              onPressed: () {
+                                                ref
+                                                    .read(
+                                                      productsPaginationProvider
+                                                          .notifier,
+                                                    )
+                                                    .retry();
+                                              },
+                                              icon: const Icon(
+                                                Icons.refresh,
+                                              ),
+                                              label: const Text(
+                                                'Retry',
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+
+                                    if (paginationState.isLoadingMore) {
+                                      return const Center(
+                                        child:
+                                            CircularProgressIndicator(),
+                                      );
+                                    }
+
+                                    return const SizedBox.shrink();
+                                  }
+
+                                  return ProductCard(
+                                    product:
+                                        filteredProducts[index],
+                                  );
+                                },
+                              ),
+                            ),
+                    ),
+                  ],
+                ),
     );
   }
 }
@@ -533,9 +687,8 @@ class ProductCard extends ConsumerWidget {
                               ..hideCurrentSnackBar()
                               ..showSnackBar(
                                 SnackBar(
-                                  duration: const Duration(
-                                    seconds: 1,
-                                  ),
+                                  duration:
+                                      const Duration(seconds: 1),
                                   content: Text(
                                     isFavorite
                                         ? 'Removed from Wishlist'
