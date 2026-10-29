@@ -1,11 +1,21 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
-import 'features/products/screens/product_list_screen.dart';
+import 'package:hive_ce_flutter/hive_flutter.dart';
+import 'firebase_options.dart';
+import 'features/auth/auth_gate.dart';
 
-void main() {
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive for Chrome, Android and desktop.
+  await Hive.initFlutter();
+  await Hive.openBox<Map>('shopmate_orders');
+
+  // Initialize Firebase.
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(
     const ProviderScope(
@@ -34,7 +44,7 @@ class MyApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      home: const ProductListScreen(),
+      home: const AuthGate(),
     );
   }
 }
