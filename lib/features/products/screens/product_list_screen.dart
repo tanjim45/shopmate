@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopmate/features/auth/profile_screen.dart';
 import 'package:shopmate/features/products/providers/cart_provider.dart';
 import 'package:shopmate/features/products/screens/cart_screen.dart';
 import 'package:shopmate/features/products/screens/order_history_screen.dart';
@@ -136,6 +137,18 @@ class _ProductListScreenState
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
+           IconButton(
+            tooltip: 'My Profile',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => const ProfileScreen(),
+                ),
+              );
+            },
+            icon: const Icon(Icons.account_circle_outlined),
+          ),
+  
           IconButton(
             tooltip: 'My Orders',
             onPressed: () {
