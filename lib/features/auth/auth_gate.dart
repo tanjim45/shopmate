@@ -1,7 +1,8 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../products/screens/product_list_screen.dart';
-import 'login_screen.dart';
+import 'get_start_screen.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -22,7 +23,9 @@ class AuthGate extends StatelessWidget {
         if (snapshot.hasError) {
           return const Scaffold(
             body: Center(
-              child: Text('Something went wrong. Please restart the app.'),
+              child: Text(
+                'Something went wrong. Please restart the app.',
+              ),
             ),
           );
         }
@@ -33,7 +36,7 @@ class AuthGate extends StatelessWidget {
           return const ProductListScreen();
         }
 
-        return const LoginScreen();
+        return const GetStartScreen();
       },
     );
   }

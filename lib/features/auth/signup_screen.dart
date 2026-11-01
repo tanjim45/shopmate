@@ -1,5 +1,10 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shopmate/features/auth/get_start_screen.dart';
+import 'package:shopmate/features/products/screens/product_list_screen.dart';
+import 'package:shopmate/features/products/services/address_service.dart';
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -15,10 +20,17 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _divisionController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _areaController = TextEditingController();
+  final _houseController = TextEditingController();
+  final _phoneController = TextEditingController();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  final AddressService _addressService = AddressService();
 
   @override
   void dispose() {
@@ -26,6 +38,11 @@ class _SignupScreenState extends State<SignupScreen> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _divisionController.dispose();
+    _cityController.dispose();
+    _areaController.dispose();
+    _houseController.dispose();
+    _phoneController.dispose();
     super.dispose();
   }
 
@@ -36,6 +53,93 @@ class _SignupScreenState extends State<SignupScreen> {
       SnackBar(content: Text(message)),
     );
   }
+
+  Widget _buildAddressField({
+    required String label,
+    required IconData icon,
+    required TextEditingController controller,
+    TextInputType keyboardType = TextInputType.text,
+    TextCapitalization textCapitalization = TextCapitalization.words,
+    String? Function(String?)? validator,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: TextFormField(
+        controller: controller,
+        keyboardType: keyboardType,
+        textCapitalization: textCapitalization,
+        decoration: InputDecoration(
+          labelText: label,
+          prefixIcon: Icon(icon),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        validator: validator ??
+            (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Please enter $label.';
+              }
+              return null;
+            },
+      ),
+    );
+  }
+
+Future<void> _showEnterShopMateDialog() async {
+  if (!mounted) return;
+
+  final result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Text('Welcome to ShopMate!'),
+        content: const Text(
+          'Do you want to enter the ShopMate?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, false);
+            },
+            child: const Text('NO'),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('YES'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (!mounted) return;
+
+  if (result == true) {
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const ProductListScreen(),
+      ),
+      (route) => false,
+    );
+  } else if (result == false) {
+    await FirebaseAuth.instance.signOut();
+
+    if (!mounted) return;
+
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const GetStartScreen(),
+      ),
+      (route) => false,
+    );
+  }
+}
+
+
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
@@ -49,13 +153,27 @@ class _SignupScreenState extends State<SignupScreen> {
         password: _passwordController.text,
       );
 
-      await credential.user?.updateDisplayName(
-        _nameController.text.trim(),
+      final user = credential.user;
+
+      if (user == null) {
+        throw Exception('Account creation failed.');
+      }
+
+      await user.updateDisplayName(_nameController.text.trim());
+
+     await _addressService.savePermanentAddress(
+        name: _nameController.text.trim(),
+        email: _emailController.text.trim(),
+        division: _divisionController.text.trim(),
+        city: _cityController.text.trim(),
+        areaName: _areaController.text.trim(),
+        house: _houseController.text.trim(),
+        phone: _phoneController.text.trim(),
       );
 
-      await credential.user?.reload();
-
-      // Firebase AuthGate automatically opens ProductListScreen.
+      await user.reload();
+      await _showEnterShopMateDialog();
+      // Firebase AuthGate automatically opens the app.
     } on FirebaseAuthException catch (e) {
       String message;
 
@@ -77,8 +195,8 @@ class _SignupScreenState extends State<SignupScreen> {
       }
 
       _showMessage(message);
-    } catch (_) {
-      _showMessage('Something went wrong. Please try again.');
+    } catch (e) {
+      _showMessage('Account created, but address could not be saved: $e');
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -129,57 +247,45 @@ class _SignupScreenState extends State<SignupScreen> {
                     ),
                     const SizedBox(height: 30),
 
-                    TextFormField(
-                      controller: _nameController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: InputDecoration(
-                        labelText: 'Full name',
-                        prefixIcon: const Icon(Icons.person_outline),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
+                    // Personal Information
+                    const Text(
+                      'Personal Information',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
                       ),
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Please enter your name.';
-                        }
-
-                        if (value.trim().length < 2) {
-                          return 'Name must be at least 2 characters.';
-                        }
-
-                        return null;
-                      },
                     ),
                     const SizedBox(height: 16),
 
-                    TextFormField(
+                    _buildAddressField(
+                      label: 'Full name',
+                      icon: Icons.person_outline,
+                      controller: _nameController,
+                      validator: (value) {
+                        if (value == null || value.trim().length < 2) {
+                          return 'Name must be at least 2 characters.';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    _buildAddressField(
+                      label: 'Email address',
+                      icon: Icons.email_outlined,
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        labelText: 'Email address',
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
+                      textCapitalization: TextCapitalization.none,
                       validator: (value) {
                         final email = value?.trim() ?? '';
 
-                        if (email.isEmpty) {
-                          return 'Please enter your email.';
-                        }
-
-                        if (!RegExp(
-                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-                        ).hasMatch(email)) {
+                        if (email.isEmpty ||
+                            !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+                                .hasMatch(email)) {
                           return 'Enter a valid email address.';
                         }
-
                         return null;
                       },
                     ),
-                    const SizedBox(height: 16),
 
                     TextFormField(
                       controller: _passwordController,
@@ -204,14 +310,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a password.';
-                        }
-
-                        if (value.length < 6) {
+                        if (value == null || value.length < 6) {
                           return 'Password must be at least 6 characters.';
                         }
-
                         return null;
                       },
                     ),
@@ -244,15 +345,72 @@ class _SignupScreenState extends State<SignupScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Please confirm your password.';
                         }
-
                         if (value != _passwordController.text) {
                           return 'Passwords do not match.';
                         }
-
                         return null;
                       },
                     ),
-                    const SizedBox(height: 26),
+                    const SizedBox(height: 28),
+
+                    // Delivery Address
+                    const Text(
+                      'Your Permanent Address',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Your address will be saved for future orders.',
+                      style: TextStyle(
+                        color: colors.onSurfaceVariant,
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+
+                    _buildAddressField(
+                      label: 'Division',
+                      icon: Icons.map_outlined,
+                      controller: _divisionController,
+                    ),
+
+                    _buildAddressField(
+                      label: 'City',
+                      icon: Icons.location_city_outlined,
+                      controller: _cityController,
+                    ),
+
+                    _buildAddressField(
+                      label: 'Area Name',
+                      icon: Icons.location_on_outlined,
+                      controller: _areaController,
+                    ),
+
+                    _buildAddressField(
+                      label: 'House No. / House Name',
+                      icon: Icons.home_outlined,
+                      controller: _houseController,
+                    ),
+
+                    _buildAddressField(
+                      label: 'Mobile Number',
+                      icon: Icons.phone_outlined,
+                      controller: _phoneController,
+                      keyboardType: TextInputType.phone,
+                      textCapitalization: TextCapitalization.none,
+                      validator: (value) {
+                        final phone = value?.trim() ?? '';
+                        if (!RegExp(r'^[0-9+\-\s]{10,15}$')
+                            .hasMatch(phone)) {
+                          return 'Enter a valid mobile number.';
+                        }
+                        return null;
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
 
                     SizedBox(
                       height: 54,

@@ -11,6 +11,7 @@ Future<void> main() async {
   // Initialize Hive for Chrome, Android and desktop.
   await Hive.initFlutter();
   await Hive.openBox<Map>('shopmate_orders');
+  await Hive.openBox<Map>('shopmate_addresses');
 
   // Initialize Firebase.
   await Firebase.initializeApp(
