@@ -23,20 +23,11 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -50,20 +41,49 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAXKmCrwMTNkg-DReQo4r6peAFmKx2UxZ8',
-    appId: '1:967255716829:web:1926cb3271193cf7d83c34',
-    messagingSenderId: '967255716829',
-    projectId: 'shop-4d5ec',
-    authDomain: 'shop-4d5ec.firebaseapp.com',
-    storageBucket: 'shop-4d5ec.firebasestorage.app',
-    measurementId: 'G-80EWC2HQDM',
+    apiKey: 'AIzaSyAGEoy9crNydAD51EC7SYJf4-dzgUV3y20',
+    appId: '1:697531577761:web:29151990bcddca5fc607e0',
+    messagingSenderId: '697531577761',
+    projectId: 'tanjimshop-99362',
+    authDomain: 'tanjimshop-99362.firebaseapp.com',
+    storageBucket: 'tanjimshop-99362.firebasestorage.app',
+    measurementId: 'G-4P6S12ST4T',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDkU5NlsPxgJSpCcWMsn_EK0g3zXPbBb4o',
-    appId: '1:967255716829:android:e7cee1ce06bba4dfd83c34',
-    messagingSenderId: '967255716829',
-    projectId: 'shop-4d5ec',
-    storageBucket: 'shop-4d5ec.firebasestorage.app',
+    apiKey: 'AIzaSyABQq1P9GleJ7rtlnL2jFcocucEJiNXEeo',
+    appId: '1:697531577761:android:24166c883fdfc848c607e0',
+    messagingSenderId: '697531577761',
+    projectId: 'tanjimshop-99362',
+    storageBucket: 'tanjimshop-99362.firebasestorage.app',
+  );
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyAVZkuaa63E97C67RJ5gfAZ1V2Dn6WxHZI',
+    appId: '1:697531577761:ios:b6aa60160f765662c607e0',
+    messagingSenderId: '697531577761',
+    projectId: 'tanjimshop-99362',
+    storageBucket: 'tanjimshop-99362.firebasestorage.app',
+    iosClientId: '697531577761-3n7qq88lkh216vj9e063cnsffv9l6k2h.apps.googleusercontent.com',
+    iosBundleId: 'com.example.shopmate',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyAVZkuaa63E97C67RJ5gfAZ1V2Dn6WxHZI',
+    appId: '1:697531577761:ios:b6aa60160f765662c607e0',
+    messagingSenderId: '697531577761',
+    projectId: 'tanjimshop-99362',
+    storageBucket: 'tanjimshop-99362.firebasestorage.app',
+    iosClientId: '697531577761-3n7qq88lkh216vj9e063cnsffv9l6k2h.apps.googleusercontent.com',
+    iosBundleId: 'com.example.shopmate',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyAGEoy9crNydAD51EC7SYJf4-dzgUV3y20',
+    appId: '1:697531577761:web:34ddce91b5c979b4c607e0',
+    messagingSenderId: '697531577761',
+    projectId: 'tanjimshop-99362',
+    authDomain: 'tanjimshop-99362.firebaseapp.com',
+    storageBucket: 'tanjimshop-99362.firebasestorage.app',
+    measurementId: 'G-WKE886JMEM',
   );
 }

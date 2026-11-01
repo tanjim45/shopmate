@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shopmate/features/products/models/order_model.dart';
 import 'package:shopmate/features/products/screens/order_details_screen.dart';
-import '../../../database/order_database.dart';
+import 'package:shopmate/features/products/services/order_service.dart';
+
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -20,7 +21,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   }
 
   void _loadOrders() {
-    _ordersFuture = OrderDatabase.instance.getOrders();
+    _ordersFuture = OrderService().getMyOrders();
   }
 
   Future<void> _refreshOrders() async {

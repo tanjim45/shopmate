@@ -1,64 +1,123 @@
 {
   "project_info": {
-    "project_number": "967255716829",
-    "project_id": "shop-4d5ec",
-    "storage_bucket": "shop-4d5ec.firebasestorage.app"
+    "project_number": "697531577761",
+    "project_id": "tanjimshop-99362",
+    "storage_bucket": "tanjimshop-99362.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:967255716829:android:61275bf225d27329d83c34",
+        "mobilesdk_app_id": "1:697531577761:android:9c8b0ebae7cc09cac607e0",
         "android_client_info": {
-          "package_name": "com.example.my_shop"
+          "package_name": "com.example.Tanjimapp"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDkU5NlsPxgJSpCcWMsn_EK0g3zXPbBb4o"
+          "current_key": "AIzaSyABQq1P9GleJ7rtlnL2jFcocucEJiNXEeo"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:967255716829:android:e016db33f787a10ed83c34",
+        "mobilesdk_app_id": "1:697531577761:android:c66ac8e7dbb0dacdc607e0",
         "android_client_info": {
-          "package_name": "com.example.my_shop_admin"
+          "package_name": "com.example.ecommerce_app"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDkU5NlsPxgJSpCcWMsn_EK0g3zXPbBb4o"
+          "current_key": "AIzaSyABQq1P9GleJ7rtlnL2jFcocucEJiNXEeo"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:967255716829:android:e7cee1ce06bba4dfd83c34",
+        "mobilesdk_app_id": "1:697531577761:android:9cc865791f669e06c607e0",
+        "android_client_info": {
+          "package_name": "com.example.push_notification_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABQq1P9GleJ7rtlnL2jFcocucEJiNXEeo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:697531577761:android:24166c883fdfc848c607e0",
         "android_client_info": {
           "package_name": "com.example.shopmate"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
-          "current_key": "AIzaSyDkU5NlsPxgJSpCcWMsn_EK0g3zXPbBb4o"
+          "current_key": "AIzaSyABQq1P9GleJ7rtlnL2jFcocucEJiNXEeo"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "697531577761-frvhnldecd14c9vbbkk96rfich48vjee.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

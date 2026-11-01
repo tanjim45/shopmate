@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/products/screens/order_success_screen.dart';
-import '../../../database/order_database.dart';
+import 'package:shopmate/features/products/services/order_service.dart';
 import '../models/order_model.dart';
 
 import '../providers/cart_provider.dart';
@@ -67,7 +67,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             items: orderItems,
           );
 
-          await OrderDatabase.instance.saveOrder(order);
+          await OrderService().saveOrder(order);
 
           if (!mounted) return;
 
