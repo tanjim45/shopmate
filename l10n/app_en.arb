@@ -1,0 +1,79 @@
+
+{
+  "@@locale": "en",
+  "appTitle": "ShopMate",
+  "settings": "Settings",
+  "language": "Language",
+  "english": "English",
+  "bangla": "Bangla",
+  "appearance": "Appearance",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "systemTheme": "System Default",
+  "accountInformation": "Account Information",
+  "logout": "Logout",
+  "cancel": "Cancel",
+  "save": "Save",
+  "myProfile": "My Profile",
+  "shopMateUser": "ShopMate User",
+  "noEmailAvailable": "No email available",
+  "shopMateMember": "ShopMate Member",
+  "myShopping": "MY SHOPPING",
+  "myWishlist": "My Wishlist",
+  "wishlistSubtitle": "View your favorite products",
+  "orderHistory": "Order History",
+  "orderHistorySubtitle": "Track and view your orders",
+  "myCart": "My Cart",
+  "cartSubtitle": "View products in your cart",
+  "account": "ACCOUNT",
+  "accountInfoSubtitle": "View and edit your personal information",
+  "appearanceSettings": "Appearance Settings",
+  "changeThemeSubtitle": "Change light or dark mode",
+  "languageSettings": "Language Settings",
+  "changeLanguageSubtitle": "Change app language",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode",
+  "done": "Done",
+  "logOutQuestion": "Log Out?",
+  "logoutConfirmation": "Are you sure you want to log out of your account?",
+  "no": "No",
+  "yesLogout": "Yes, Log Out",
+  "name": "Name",
+  "email": "Email",
+  "permanentAddress": "Permanent Address",
+  "noAddress": "No permanent address found.",
+  "mobile": "Mobile",
+  "address": "Address",
+  "close": "Close",
+  "editAddress": "Edit Address",
+  "notAvailable": "Not available",
+  "editPermanentAddress": "Edit Permanent Address",
+  "fullName": "Full Name",
+  "mobileNumber": "Mobile Number",
+  "division": "Division",
+  "city": "City",
+  "areaName": "Area Name",
+  "houseNumber": "House No. / House Name",
+  "pleaseEnter": "Please enter {field}",
+  "@pleaseEnter": {
+    "placeholders": {
+      "field": {}
+    }
+  },
+  "validMobile": "Enter a valid mobile number",
+  "couldNotLoadAddress": "Could not load address: {error}",
+  "@couldNotLoadAddress": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedUpdateAddress": "Failed to update address: {error}",
+  "@failedUpdateAddress": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "userNotLoggedIn": "User is not logged in.",
+  "saveChanges": "Save Changes",
+  "profileFooter": "ShopMate • Your shopping companion"
+}

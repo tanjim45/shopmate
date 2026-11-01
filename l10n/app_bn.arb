@@ -1,0 +1,79 @@
+
+{
+  "@@locale": "bn",
+  "appTitle": "শপমেট",
+  "settings": "সেটিংস",
+  "language": "ভাষা",
+  "english": "ইংরেজি",
+  "bangla": "বাংলা",
+  "appearance": "অ্যাপের চেহারা",
+  "lightTheme": "লাইট",
+  "darkTheme": "ডার্ক",
+  "systemTheme": "সিস্টেম ডিফল্ট",
+  "accountInformation": "অ্যাকাউন্টের তথ্য",
+  "logout": "লগআউট",
+  "cancel": "বাতিল",
+  "save": "সংরক্ষণ",
+  "myProfile": "আমার প্রোফাইল",
+  "shopMateUser": "শপমেট ব্যবহারকারী",
+  "noEmailAvailable": "কোনো ইমেইল পাওয়া যায়নি",
+  "shopMateMember": "শপমেট সদস্য",
+  "myShopping": "আমার কেনাকাটা",
+  "myWishlist": "আমার পছন্দের তালিকা",
+  "wishlistSubtitle": "আপনার পছন্দের পণ্যগুলো দেখুন",
+  "orderHistory": "অর্ডারের ইতিহাস",
+  "orderHistorySubtitle": "আপনার অর্ডার দেখুন ও ট্র্যাক করুন",
+  "myCart": "আমার কার্ট",
+  "cartSubtitle": "কার্টে থাকা পণ্যগুলো দেখুন",
+  "account": "অ্যাকাউন্ট",
+  "accountInfoSubtitle": "আপনার ব্যক্তিগত তথ্য দেখুন ও পরিবর্তন করুন",
+  "appearanceSettings": "অ্যাপের থিম সেটিংস",
+  "changeThemeSubtitle": "লাইট বা ডার্ক মোড পরিবর্তন করুন",
+  "languageSettings": "ভাষার সেটিংস",
+  "changeLanguageSubtitle": "অ্যাপের ভাষা পরিবর্তন করুন",
+  "lightMode": "লাইট মোড",
+  "darkMode": "ডার্ক মোড",
+  "done": "সম্পন্ন",
+  "logOutQuestion": "লগআউট করবেন?",
+  "logoutConfirmation": "আপনি কি নিশ্চিত যে আপনার অ্যাকাউন্ট থেকে লগআউট করতে চান?",
+  "no": "না",
+  "yesLogout": "হ্যাঁ, লগআউট",
+  "name": "নাম",
+  "email": "ইমেইল",
+  "permanentAddress": "স্থায়ী ঠিকানা",
+  "noAddress": "কোনো স্থায়ী ঠিকানা পাওয়া যায়নি।",
+  "mobile": "মোবাইল",
+  "address": "ঠিকানা",
+  "close": "বন্ধ করুন",
+  "editAddress": "ঠিকানা পরিবর্তন",
+  "notAvailable": "পাওয়া যায়নি",
+  "editPermanentAddress": "স্থায়ী ঠিকানা পরিবর্তন",
+  "fullName": "সম্পূর্ণ নাম",
+  "mobileNumber": "মোবাইল নম্বর",
+  "division": "বিভাগ",
+  "city": "শহর",
+  "areaName": "এলাকার নাম",
+  "houseNumber": "বাড়ি নম্বর / বাড়ির নাম",
+  "pleaseEnter": "{field} লিখুন",
+  "@pleaseEnter": {
+    "placeholders": {
+      "field": {}
+    }
+  },
+  "validMobile": "সঠিক মোবাইল নম্বর দিন",
+  "couldNotLoadAddress": "ঠিকানা লোড করা যায়নি: {error}",
+  "@couldNotLoadAddress": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "failedUpdateAddress": "ঠিকানা আপডেট করা যায়নি: {error}",
+  "@failedUpdateAddress": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "userNotLoggedIn": "ব্যবহারকারী লগইন করা নেই।",
+  "saveChanges": "পরিবর্তন সংরক্ষণ করুন",
+  "profileFooter": "শপমেট • আপনার কেনাকাটার সঙ্গী"
+}

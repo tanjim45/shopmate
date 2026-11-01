@@ -1,15 +1,21 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/auth/app_theme.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
+import 'theme_provider.dart';
+import 'language_provider.dart';
 import '../products/screens/cart_screen.dart';
 import '../products/screens/order_history_screen.dart';
 import '../products/screens/wishlist_screen.dart';
 import '../products/services/address_service.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   Future<void> _logout(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
+
     final shouldLogout = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
@@ -26,17 +32,20 @@ class ProfileScreen extends StatelessWidget {
               color: AppColors.danger,
             ),
           ),
-          title: const Text('Log Out?'),
-          content: const Text(
-            'Are you sure you want to log out of your account?',
+          title: Text(l10n.logOutQuestion),
+          content: Text(
+            l10n.logoutConfirmation,
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textMuted, height: 1.5),
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              height: 1.5,
+            ),
           ),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext, false),
-              child: const Text('No'),
+              child: Text(l10n.no),
             ),
             FilledButton(
               style: FilledButton.styleFrom(
@@ -44,7 +53,7 @@ class ProfileScreen extends StatelessWidget {
                 minimumSize: const Size(130, 46),
               ),
               onPressed: () => Navigator.pop(dialogContext, true),
-              child: const Text('Yes, Log Out'),
+              child: Text(l10n.yesLogout),
             ),
           ],
         );
@@ -54,6 +63,115 @@ class ProfileScreen extends StatelessWidget {
     if (shouldLogout != true || !context.mounted) return;
 
     await FirebaseAuth.instance.signOut();
+  }
+
+  Future<void> _showAppearanceSettings(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final selectedTheme = ref.watch(themeProvider);
+            final currentL10n = AppLocalizations.of(context)!;
+
+            return AlertDialog(
+              title: Text(currentL10n.appearanceSettings),
+              content: RadioGroup<ThemeMode>(
+                groupValue: selectedTheme,
+                onChanged: (value) {
+                  if (value != null) {
+                    ref.read(themeProvider.notifier).changeTheme(value);
+                  }
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.light,
+                      title: Text(currentL10n.lightMode),
+                      secondary: const Icon(Icons.light_mode),
+                    ),
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.dark,
+                      title: Text(currentL10n.darkMode),
+                      secondary: const Icon(Icons.dark_mode),
+                    ),
+                    RadioListTile<ThemeMode>(
+                      value: ThemeMode.system,
+                      title: Text(currentL10n.systemTheme),
+                      secondary: const Icon(Icons.settings_brightness),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(currentL10n.done),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _showLanguageSettings(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return Consumer(
+          builder: (context, ref, child) {
+            final selectedLanguage = ref.watch(languageProvider);
+            final l10n = AppLocalizations.of(context)!;
+
+            return AlertDialog(
+              title: Text(l10n.language),
+              content: RadioGroup<String>(
+                groupValue: selectedLanguage.languageCode,
+                onChanged: (value) {
+                  if (value != null) {
+                    ref
+                        .read(languageProvider.notifier)
+                        .changeLanguage(value);
+                  }
+                },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    RadioListTile<String>(
+                      value: 'en',
+                      title: Text(l10n.english),
+                      secondary: const Icon(Icons.language),
+                    ),
+                    RadioListTile<String>(
+                      value: 'bn',
+                      title: Text(l10n.bangla),
+                      secondary: const Icon(Icons.translate),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(l10n.done),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   void _openPage(BuildContext context, Widget page) {
@@ -83,8 +201,10 @@ class ProfileScreen extends StatelessWidget {
       builder: (dialogContext) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
+            final l10n = AppLocalizations.of(context)!;
+
             return AlertDialog(
-              title: const Text('Account Information'),
+              title: Text(l10n.accountInformation),
               content: FutureBuilder<Map<String, dynamic>?>(
                 future: addressService.getPermanentAddress(),
                 builder: (context, snapshot) {
@@ -102,15 +222,25 @@ class ProfileScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        _infoRow(Icons.person_outline, 'Name', name),
+                        _infoRow(
+                          Icons.person_outline,
+                          l10n.name,
+                          name,
+                          l10n.notAvailable,
+                        ),
                         const SizedBox(height: 14),
-                        _infoRow(Icons.email_outlined, 'Email', email),
+                        _infoRow(
+                          Icons.email_outlined,
+                          l10n.email,
+                          email,
+                          l10n.notAvailable,
+                        ),
                         const SizedBox(height: 18),
                         const Divider(),
                         const SizedBox(height: 14),
-                        const Text(
-                          'Permanent Address',
-                          style: TextStyle(
+                        Text(
+                          l10n.permanentAddress,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w700,
                             fontSize: 16,
                             color: AppColors.textDark,
@@ -118,21 +248,25 @@ class ProfileScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 14),
                         if (address == null)
-                          const Text(
-                            'No permanent address found.',
-                            style: TextStyle(color: AppColors.textMuted),
+                          Text(
+                            l10n.noAddress,
+                            style: const TextStyle(
+                              color: AppColors.textMuted,
+                            ),
                           )
                         else ...[
                           _infoRow(
                             Icons.phone_outlined,
-                            'Mobile',
+                            l10n.mobile,
                             address['phone']?.toString() ?? '',
+                            l10n.notAvailable,
                           ),
                           const SizedBox(height: 14),
                           _infoRow(
                             Icons.home_outlined,
-                            'Address',
+                            l10n.address,
                             _formatAddress(address),
+                            l10n.notAvailable,
                           ),
                         ],
                       ],
@@ -143,7 +277,7 @@ class ProfileScreen extends StatelessWidget {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.pop(dialogContext),
-                  child: const Text('Close'),
+                  child: Text(l10n.close),
                 ),
                 FilledButton.icon(
                   style: FilledButton.styleFrom(
@@ -162,7 +296,7 @@ class ProfileScreen extends StatelessWidget {
                     }
                   },
                   icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Edit Address'),
+                  label: Text(l10n.editAddress),
                 ),
               ],
             );
@@ -172,7 +306,12 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _infoRow(IconData icon, String label, String value) {
+  Widget _infoRow(
+    IconData icon,
+    String label,
+    String value,
+    String notAvailable,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -198,7 +337,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 2),
               Text(
-                value.isEmpty ? 'Not available' : value,
+                value.isEmpty ? notAvailable : value,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
                   color: AppColors.textDark,
@@ -228,22 +367,25 @@ class ProfileScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
     final user = FirebaseAuth.instance.currentUser;
     final displayName = user?.displayName?.trim();
 
     final name = displayName != null && displayName.isNotEmpty
         ? displayName
-        : 'ShopMate User';
+        : l10n.shopMateUser;
 
-    final email = user?.email ?? 'No email available';
+    final email = user?.email ?? l10n.noEmailAvailable;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Profile')),
+      appBar: AppBar(
+        title: Text(l10n.myProfile),
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
         children: [
-          // Header card
           Container(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 26),
             decoration: BoxDecoration(
@@ -315,15 +457,18 @@ class ProfileScreen extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.3),
                     ),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.workspace_premium_rounded,
-                          size: 16, color: Colors.white),
-                      SizedBox(width: 6),
+                      const Icon(
+                        Icons.workspace_premium_rounded,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      const SizedBox(width: 6),
                       Text(
-                        'ShopMate Member',
-                        style: TextStyle(
+                        l10n.shopMateMember,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w700,
                           fontSize: 13,
@@ -337,46 +482,63 @@ class ProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 30),
 
-          _sectionLabel('MY SHOPPING'),
+          _sectionLabel(l10n.myShopping),
           _ProfileMenuTile(
             icon: Icons.favorite_rounded,
-            title: 'My Wishlist',
-            subtitle: 'View your favorite products',
+            title: l10n.myWishlist,
+            subtitle: l10n.wishlistSubtitle,
             color: const Color(0xFFE91E63),
             onTap: () => _openPage(context, const WishlistScreen()),
           ),
           _ProfileMenuTile(
             icon: Icons.receipt_long_rounded,
-            title: 'Order History',
-            subtitle: 'Track and view your orders',
+            title: l10n.orderHistory,
+            subtitle: l10n.orderHistorySubtitle,
             color: AppColors.primary,
             onTap: () => _openPage(context, const OrderHistoryScreen()),
           ),
           _ProfileMenuTile(
             icon: Icons.shopping_cart_rounded,
-            title: 'My Cart',
-            subtitle: 'View products in your cart',
+            title: l10n.myCart,
+            subtitle: l10n.cartSubtitle,
             color: AppColors.accent,
             onTap: () => _openPage(context, const CartScreen()),
           ),
           const SizedBox(height: 22),
 
-          _sectionLabel('ACCOUNT'),
+          _sectionLabel(l10n.account),
           _ProfileMenuTile(
             icon: Icons.manage_accounts_rounded,
-            title: 'Account Information',
-            subtitle: 'View and edit your personal information',
+            title: l10n.accountInformation,
+            subtitle: l10n.accountInfoSubtitle,
             color: const Color(0xFF2F80ED),
             onTap: () => _showAccountInformation(context, name, email),
+          ),
+          _ProfileMenuTile(
+            icon: Icons.palette_outlined,
+            title: l10n.appearanceSettings,
+            subtitle: l10n.changeThemeSubtitle,
+            color: const Color(0xFF8E44AD),
+            onTap: () => _showAppearanceSettings(context, ref),
+          ),
+          _ProfileMenuTile(
+            icon: Icons.language_rounded,
+            title: l10n.languageSettings,
+            subtitle: l10n.changeLanguageSubtitle,
+            color: const Color(0xFF16A085),
+            onTap: () => _showLanguageSettings(context, ref),
           ),
           const SizedBox(height: 22),
 
           OutlinedButton.icon(
             onPressed: () => _logout(context),
             icon: const Icon(Icons.logout_rounded),
-            label: const Text(
-              'Log Out',
-              style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+            label: Text(
+              l10n.logout,
+              style: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 15,
+              ),
             ),
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.danger,
@@ -391,10 +553,13 @@ class ProfileScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-          const Center(
+          Center(
             child: Text(
-              'ShopMate • Your shopping companion',
-              style: TextStyle(fontSize: 12.5, color: AppColors.textMuted),
+              l10n.profileFooter,
+              style: const TextStyle(
+                fontSize: 12.5,
+                color: AppColors.textMuted,
+              ),
             ),
           ),
         ],
@@ -406,7 +571,9 @@ class ProfileScreen extends StatelessWidget {
 class _EditPermanentAddressDialog extends StatefulWidget {
   final AddressService addressService;
 
-  const _EditPermanentAddressDialog({required this.addressService});
+  const _EditPermanentAddressDialog({
+    required this.addressService,
+  });
 
   @override
   State<_EditPermanentAddressDialog> createState() =>
@@ -434,6 +601,8 @@ class _EditPermanentAddressDialogState
   }
 
   Future<void> _loadAddress() async {
+    final l10n = AppLocalizations.of(context)!;
+
     try {
       final address = await widget.addressService.getPermanentAddress();
 
@@ -451,7 +620,9 @@ class _EditPermanentAddressDialogState
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not load address: $e')),
+        SnackBar(
+          content: Text(l10n.couldNotLoadAddress(e.toString())),
+        ),
       );
     } finally {
       if (mounted) {
@@ -466,6 +637,8 @@ class _EditPermanentAddressDialogState
     IconData icon, {
     TextInputType keyboardType = TextInputType.text,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
@@ -478,12 +651,12 @@ class _EditPermanentAddressDialogState
         ),
         validator: (value) {
           if (value == null || value.trim().isEmpty) {
-            return 'Please enter $label';
+            return l10n.pleaseEnter(label);
           }
 
-          if (label == 'Mobile Number' &&
+          if (label == l10n.mobileNumber &&
               !RegExp(r'^[0-9+\-\s]{10,15}$').hasMatch(value.trim())) {
-            return 'Enter a valid mobile number';
+            return l10n.validMobile;
           }
 
           return null;
@@ -501,7 +674,9 @@ class _EditPermanentAddressDialogState
       final user = FirebaseAuth.instance.currentUser;
 
       if (user == null) {
-        throw Exception('User is not logged in.');
+        throw Exception(
+          AppLocalizations.of(context)!.userNotLoggedIn,
+        );
       }
 
       await widget.addressService.savePermanentAddress(
@@ -520,9 +695,11 @@ class _EditPermanentAddressDialogState
     } catch (e) {
       if (!mounted) return;
 
+      final l10n = AppLocalizations.of(context)!;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to update address: $e'),
+          content: Text(l10n.failedUpdateAddress(e.toString())),
           backgroundColor: AppColors.danger,
         ),
       );
@@ -546,8 +723,10 @@ class _EditPermanentAddressDialogState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AlertDialog(
-      title: const Text('Edit Permanent Address'),
+      title: Text(l10n.editPermanentAddress),
       content: _isLoading
           ? const SizedBox(
               height: 100,
@@ -562,22 +741,37 @@ class _EditPermanentAddressDialogState
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      _field('Full Name', _nameController,
-                          Icons.person_outline),
                       _field(
-                        'Mobile Number',
+                        l10n.fullName,
+                        _nameController,
+                        Icons.person_outline,
+                      ),
+                      _field(
+                        l10n.mobileNumber,
                         _phoneController,
                         Icons.phone_outlined,
                         keyboardType: TextInputType.phone,
                       ),
-                      _field('Division', _divisionController,
-                          Icons.map_outlined),
-                      _field('City', _cityController,
-                          Icons.location_city_outlined),
-                      _field('Area Name', _areaController,
-                          Icons.location_on_outlined),
-                      _field('House No. / House Name', _houseController,
-                          Icons.home_outlined),
+                      _field(
+                        l10n.division,
+                        _divisionController,
+                        Icons.map_outlined,
+                      ),
+                      _field(
+                        l10n.city,
+                        _cityController,
+                        Icons.location_city_outlined,
+                      ),
+                      _field(
+                        l10n.areaName,
+                        _areaController,
+                        Icons.location_on_outlined,
+                      ),
+                      _field(
+                        l10n.houseNumber,
+                        _houseController,
+                        Icons.home_outlined,
+                      ),
                     ],
                   ),
                 ),
@@ -588,10 +782,12 @@ class _EditPermanentAddressDialogState
           onPressed: _isSaving || _isLoading
               ? null
               : () => Navigator.pop(context, false),
-          child: const Text('Cancel'),
+          child: Text(l10n.cancel),
         ),
         FilledButton(
-          style: FilledButton.styleFrom(minimumSize: const Size(130, 46)),
+          style: FilledButton.styleFrom(
+            minimumSize: const Size(130, 46),
+          ),
           onPressed: _isSaving || _isLoading ? null : _saveAddress,
           child: _isSaving
               ? const SizedBox(
@@ -602,7 +798,7 @@ class _EditPermanentAddressDialogState
                     color: Colors.white,
                   ),
                 )
-              : const Text('Save Changes'),
+              : Text(l10n.saveChanges),
         ),
       ],
     );
@@ -629,7 +825,7 @@ class _ProfileMenuTile extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: AppColors.border),
         boxShadow: [
@@ -646,7 +842,10 @@ class _ProfileMenuTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
             child: Row(
               children: [
                 Container(
@@ -665,10 +864,10 @@ class _ProfileMenuTile extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 15.5,
-                          color: AppColors.textDark,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 3),
