@@ -1,89 +1,156 @@
-
 import 'package:flutter/material.dart';
+import 'package:shopmate/features/auth/app_theme.dart';
 import 'login_screen.dart';
 
 class GetStartScreen extends StatelessWidget {
   const GetStartScreen({super.key});
+
+  Widget _circle(double size, double alpha) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: alpha),
+      ),
+    );
+  }
+
+  Widget _chip(IconData icon, String text) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(30),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF6750A4),
-              Color(0xFF9580D8),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(28),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(
-                  Icons.shopping_bag_rounded,
-                  size: 100,
-                  color: Colors.white,
-                ),
-                const SizedBox(height: 30),
-                const Text(
-                  'Welcome to ShopMate',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                const Text(
-                  'Discover amazing products and enjoy '
-                  'a smooth shopping experience.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 45),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
+        height: double.infinity,
+        decoration: const BoxDecoration(gradient: AppColors.gradient),
+        child: Stack(
+          children: [
+            Positioned(top: -70, right: -60, child: _circle(240, 0.08)),
+            Positioned(top: 140, left: -80, child: _circle(180, 0.06)),
+            Positioned(bottom: -90, left: -40, child: _circle(260, 0.08)),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 28),
+                child: Column(
+                  children: [
+                    const Spacer(flex: 2),
+                    Container(
+                      padding: const EdgeInsets.all(28),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.16),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1.5,
                         ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF6750A4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: const Icon(
+                        Icons.shopping_bag_rounded,
+                        size: 78,
+                        color: Colors.white,
                       ),
                     ),
-                    child: const Text(
-                      'Get Start',
+                    const SizedBox(height: 34),
+                    const Text(
+                      'ShopMate',
                       style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 40,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Discover amazing products and enjoy\na smooth shopping experience.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.55,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                    const SizedBox(height: 26),
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 10,
+                      alignment: WrapAlignment.center,
+                      children: [
+                        _chip(Icons.local_shipping_outlined, 'Fast Delivery'),
+                        _chip(Icons.verified_user_outlined, 'Secure'),
+                        _chip(Icons.favorite_border_rounded, 'Wishlist'),
+                      ],
+                    ),
+                    const Spacer(flex: 3),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 58,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                          foregroundColor: AppColors.primary,
+                          elevation: 6,
+                          shadowColor: Colors.black38,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(18),
+                          ),
+                        ),
+                        child: const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Get Started',
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            SizedBox(width: 8),
+                            Icon(Icons.arrow_forward_rounded),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                  ],
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
