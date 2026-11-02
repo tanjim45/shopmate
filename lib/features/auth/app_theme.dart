@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 
 /// Central colour palette for ShopMate.
@@ -32,6 +33,23 @@ class AppTheme {
     );
   }
 
+  // Shared TextButton style to keep both themes consistent.
+  static TextButtonThemeData _textButtonTheme(Color color) {
+    return TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: color,
+        textStyle: const TextStyle(
+          inherit: false,
+          fontFamily: 'Roboto',
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.1,
+          height: 1.4,
+        ),
+      ),
+    );
+  }
+
   static ThemeData get light {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
@@ -43,9 +61,11 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.light,
       colorScheme: scheme,
       scaffoldBackgroundColor: AppColors.background,
       fontFamily: 'Roboto',
+
       appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         foregroundColor: AppColors.textDark,
@@ -58,12 +78,17 @@ class AppTheme {
           fontWeight: FontWeight.w700,
         ),
       ),
+
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: Colors.white,
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        labelStyle: const TextStyle(color: AppColors.textMuted),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        labelStyle: const TextStyle(
+          color: AppColors.textMuted,
+        ),
         prefixIconColor: AppColors.textMuted,
         suffixIconColor: AppColors.textMuted,
         border: _border(AppColors.border),
@@ -72,6 +97,7 @@ class AppTheme {
         errorBorder: _border(AppColors.danger),
         focusedErrorBorder: _border(AppColors.danger, 1.6),
       ),
+
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           backgroundColor: AppColors.primary,
@@ -86,12 +112,9 @@ class AppTheme {
           ),
         ),
       ),
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
-          textStyle: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-      ),
+
+      textButtonTheme: _textButtonTheme(AppColors.primary),
+
       cardTheme: CardThemeData(
         color: Colors.white,
         elevation: 0,
@@ -101,6 +124,7 @@ class AppTheme {
           side: const BorderSide(color: AppColors.border),
         ),
       ),
+
       dialogTheme: DialogThemeData(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
@@ -113,21 +137,25 @@ class AppTheme {
           fontWeight: FontWeight.w700,
         ),
       ),
+
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.textDark,
-        contentTextStyle: const TextStyle(color: Colors.white),
+        contentTextStyle: const TextStyle(
+          color: Colors.white,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
       ),
+
       dividerTheme: const DividerThemeData(
         color: AppColors.border,
         thickness: 1,
       ),
     );
   }
-  
+
   static ThemeData get dark {
     const background = Color(0xFF121218);
     const surface = Color(0xFF1E1E29);
@@ -149,6 +177,7 @@ class AppTheme {
       brightness: Brightness.dark,
       colorScheme: scheme,
       scaffoldBackgroundColor: background,
+      fontFamily: 'Roboto',
 
       appBarTheme: const AppBarTheme(
         backgroundColor: background,
@@ -169,7 +198,9 @@ class AppTheme {
           horizontal: 16,
           vertical: 16,
         ),
-        labelStyle: const TextStyle(color: textMuted),
+        labelStyle: const TextStyle(
+          color: textMuted,
+        ),
         prefixIconColor: textMuted,
         suffixIconColor: textMuted,
         border: _border(border),
@@ -187,14 +218,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          textStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
 
-      textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primaryLight,
-        ),
-      ),
+      textButtonTheme: _textButtonTheme(AppColors.primaryLight),
 
       cardTheme: CardThemeData(
         color: surface,
@@ -222,7 +253,9 @@ class AppTheme {
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: surface,
-        contentTextStyle: const TextStyle(color: textPrimary),
+        contentTextStyle: const TextStyle(
+          color: textPrimary,
+        ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
         ),
@@ -234,5 +267,4 @@ class AppTheme {
       ),
     );
   }
-
 }
