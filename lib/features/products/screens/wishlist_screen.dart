@@ -97,6 +97,7 @@ class WishlistScreen extends ConsumerWidget {
                     const SizedBox(height: 16),
                     Text(
                       l10n.yourWishlistEmpty,
+                      textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontSize: 21,
                         fontWeight: FontWeight.bold,
@@ -121,39 +122,61 @@ class WishlistScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: favoriteProducts.length,
-            separatorBuilder: (_, index) =>
-                const SizedBox(height: 12),
-            itemBuilder: (context, index) {
-              final product = favoriteProducts[index];
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              final screenWidth = constraints.maxWidth;
 
-              return _WishlistProductCard(
-                product: product,
-                removeTooltip: l10n.removeFromWishlist,
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => ProductDetailsScreen(
-                        product: product,
-                      ),
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: 1200,
+                  ),
+                  child: GridView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: favoriteProducts.length,
+                    gridDelegate:
+                        SliverGridDelegateWithMaxCrossAxisExtent(
+                      maxCrossAxisExtent: screenWidth >= 900
+                          ? 560
+                          : 600,
+                      mainAxisExtent: 150,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 12,
                     ),
-                  );
-                },
-                onRemove: () {
-                  ref
-                      .read(wishlistProvider.notifier)
-                      .toggleWishlist(product.id);
+                    itemBuilder: (context, index) {
+                      final product = favoriteProducts[index];
 
-                  ScaffoldMessenger.of(context)
-                    ..hideCurrentSnackBar()
-                    ..showSnackBar(
-                      SnackBar(
-                        content: Text(l10n.removedFromWishlist),
-                      ),
-                    );
-                },
+                      return _WishlistProductCard(
+                        product: product,
+                        removeTooltip: l10n.removeFromWishlist,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => ProductDetailsScreen(
+                                product: product,
+                              ),
+                            ),
+                          );
+                        },
+                        onRemove: () {
+                          ref
+                              .read(wishlistProvider.notifier)
+                              .toggleWishlist(product.id);
+
+                          ScaffoldMessenger.of(context)
+                            ..hideCurrentSnackBar()
+                            ..showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  l10n.removedFromWishlist,
+                                ),
+                              ),
+                            );
+                        },
+                      );
+                    },
+                  ),
+                ),
               );
             },
           );
@@ -185,12 +208,12 @@ class _WishlistProductCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.all(10),
           child: Row(
             children: [
               SizedBox(
-                width: 85,
-                height: 100,
+                width: 75,
+                height: 110,
                 child: Image.network(
                   product.image,
                   fit: BoxFit.contain,
@@ -201,20 +224,23 @@ class _WishlistProductCard extends StatelessWidget {
                   },
                 ),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       product.category.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: theme.colorScheme.primary,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 5),
                     Text(
                       product.title,
                       maxLines: 2,
@@ -223,26 +249,29 @@ class _WishlistProductCard extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 6),
                     Row(
                       children: [
                         const Icon(
                           Icons.star_rounded,
                           color: Colors.amber,
-                          size: 18,
+                          size: 17,
                         ),
                         const SizedBox(width: 4),
-                        Text(
-                          '${product.rating.toStringAsFixed(1)} (${product.ratingCount})',
+                        Flexible(
+                          child: Text(
+                            '${product.rating.toStringAsFixed(1)} (${product.ratingCount})',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 5),
                     Text(
                       '\$${product.price.toStringAsFixed(2)}',
                       style: TextStyle(
                         color: theme.colorScheme.primary,
-                        fontSize: 18,
+                        fontSize: 17,
                         fontWeight: FontWeight.bold,
                       ),
                     ),

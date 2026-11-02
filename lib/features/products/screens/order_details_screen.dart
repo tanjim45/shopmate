@@ -46,50 +46,11 @@ class OrderDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('${l10n.orderNumber} #${order.id ?? '-'}'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.local_shipping_outlined,
-                    size: 36,
-                    color: theme.colorScheme.primary,
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          l10n.orderStatus,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const SizedBox(height: 5),
-                        Text(
-                          _localizedStatus(order.status, l10n),
-                          style: TextStyle(
-                            color: theme.colorScheme.primary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isWide = constraints.maxWidth >= 700;
 
-          const SizedBox(height: 16),
-
-          _sectionCard(
+          final orderInformation = _sectionCard(
             context,
             title: l10n.orderInformation,
             icon: Icons.receipt_long_outlined,
@@ -110,11 +71,9 @@ class OrderDetailsScreen extends StatelessWidget {
                 _localizedDeliveryMethod(order.deliveryMethod, l10n),
               ),
             ],
-          ),
+          );
 
-          const SizedBox(height: 16),
-
-          _sectionCard(
+          final customerInformation = _sectionCard(
             context,
             title: l10n.customerInformation,
             icon: Icons.person_outline,
@@ -123,11 +82,9 @@ class OrderDetailsScreen extends StatelessWidget {
               _detailRow(context, l10n.phone, order.phone),
               _detailRow(context, l10n.address, order.address),
             ],
-          ),
+          );
 
-          const SizedBox(height: 16),
-
-          _sectionCard(
+          final productsSection = _sectionCard(
             context,
             title: '${l10n.orderedProducts} (${order.items.length})',
             icon: Icons.shopping_bag_outlined,
@@ -188,11 +145,9 @@ class OrderDetailsScreen extends StatelessWidget {
                 ),
               ),
             ],
-          ),
+          );
 
-          const SizedBox(height: 16),
-
-          _sectionCard(
+          final paymentSection = _sectionCard(
             context,
             title: l10n.paymentSummary,
             icon: Icons.payments_outlined,
@@ -215,18 +170,93 @@ class OrderDetailsScreen extends StatelessWidget {
                 isBold: true,
               ),
             ],
-          ),
+          );
 
-          const SizedBox(height: 20),
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 1100,
+              ),
+              child: ListView(
+                padding: EdgeInsets.all(isWide ? 28 : 16),
+                children: [
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.local_shipping_outlined,
+                            size: 36,
+                            color: theme.colorScheme.primary,
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  l10n.orderStatus,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  _localizedStatus(order.status, l10n),
+                                  style: TextStyle(
+                                    color: theme.colorScheme.primary,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
-          OutlinedButton.icon(
-            onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back),
-            label: Text(l10n.backToMyOrders),
-          ),
+                  const SizedBox(height: 16),
 
-          const SizedBox(height: 16),
-        ],
+                  if (isWide)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: orderInformation),
+                        const SizedBox(width: 16),
+                        Expanded(child: customerInformation),
+                      ],
+                    )
+                  else ...[
+                    orderInformation,
+                    const SizedBox(height: 16),
+                    customerInformation,
+                  ],
+
+                  const SizedBox(height: 16),
+
+                  productsSection,
+
+                  const SizedBox(height: 16),
+
+                  paymentSection,
+
+                  const SizedBox(height: 20),
+
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back),
+                    label: Text(l10n.backToMyOrders),
+                  ),
+
+                  const SizedBox(height: 16),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }
@@ -300,6 +330,7 @@ class OrderDetailsScreen extends StatelessWidget {
             child: Text(
               value,
               textAlign: TextAlign.end,
+              softWrap: true,
               style: TextStyle(
                 fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
                 color: isBold ? theme.colorScheme.primary : null,

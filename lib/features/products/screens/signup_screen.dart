@@ -1,7 +1,8 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shopmate/features/auth/app_theme.dart';
-import 'package:shopmate/features/auth/get_start_screen.dart';
+import 'package:shopmate/features/products/screens/get_start_screen.dart';
 import 'package:shopmate/features/products/screens/product_list_screen.dart';
 import 'package:shopmate/features/products/services/address_service.dart';
 
@@ -51,8 +52,6 @@ class _SignupScreenState extends State<SignupScreen> {
       SnackBar(content: Text(message)),
     );
   }
-
-  // ---------- UI helpers ----------
 
   Widget _buildField({
     required String label,
@@ -144,7 +143,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   color: AppColors.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Icon(icon, color: AppColors.primary, size: 22),
+                child: Icon(
+                  icon,
+                  color: AppColors.primary,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -179,8 +182,6 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  // ---------- Dialog ----------
-
   Future<void> _showEnterShopMateDialog() async {
     if (!mounted) return;
 
@@ -205,7 +206,10 @@ class _SignupScreenState extends State<SignupScreen> {
           content: const Text(
             'Your account is ready.\nDo you want to enter the ShopMate?',
             textAlign: TextAlign.center,
-            style: TextStyle(color: AppColors.textMuted, height: 1.5),
+            style: TextStyle(
+              color: AppColors.textMuted,
+              height: 1.5,
+            ),
           ),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
@@ -229,7 +233,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
     if (result == true) {
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const ProductListScreen()),
+        MaterialPageRoute(
+          builder: (_) => const ProductListScreen(),
+        ),
         (route) => false,
       );
     } else if (result == false) {
@@ -238,13 +244,13 @@ class _SignupScreenState extends State<SignupScreen> {
       if (!mounted) return;
 
       Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const GetStartScreen()),
+        MaterialPageRoute(
+          builder: (_) => const GetStartScreen(),
+        ),
         (route) => false,
       );
     }
   }
-
-  // ---------- Signup logic ----------
 
   Future<void> _signup() async {
     if (!_formKey.currentState!.validate()) return;
@@ -278,7 +284,6 @@ class _SignupScreenState extends State<SignupScreen> {
 
       await user.reload();
       await _showEnterShopMateDialog();
-      // Firebase AuthGate automatically opens the app.
     } on FirebaseAuthException catch (e) {
       String message;
 
@@ -301,7 +306,9 @@ class _SignupScreenState extends State<SignupScreen> {
 
       _showMessage(message);
     } catch (e) {
-      _showMessage('Account created, but address could not be saved: $e');
+      _showMessage(
+        'Account created, but address could not be saved: $e',
+      );
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -309,220 +316,304 @@ class _SignupScreenState extends State<SignupScreen> {
     }
   }
 
-  // ---------- Build ----------
+  Widget _buildAddressFields(bool isWide) {
+    final fields = [
+      _buildField(
+        label: 'Division',
+        icon: Icons.map_outlined,
+        controller: _divisionController,
+      ),
+      _buildField(
+        label: 'City',
+        icon: Icons.location_city_outlined,
+        controller: _cityController,
+      ),
+      _buildField(
+        label: 'Area Name',
+        icon: Icons.location_on_outlined,
+        controller: _areaController,
+      ),
+      _buildField(
+        label: 'House No. / House Name',
+        icon: Icons.home_outlined,
+        controller: _houseController,
+      ),
+      _buildField(
+        label: 'Mobile Number',
+        icon: Icons.phone_outlined,
+        controller: _phoneController,
+        keyboardType: TextInputType.phone,
+        textCapitalization: TextCapitalization.none,
+        validator: (value) {
+          final phone = value?.trim() ?? '';
+
+          if (!RegExp(r'^[0-9+\-\s]{10,15}$').hasMatch(phone)) {
+            return 'Enter a valid mobile number.';
+          }
+
+          return null;
+        },
+      ),
+    ];
+
+    if (!isWide) {
+      return Column(children: fields);
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final fieldWidth = (constraints.maxWidth - 16) / 2;
+
+        return Wrap(
+          spacing: 16,
+          children: fields.map((field) {
+            return SizedBox(
+              width: fieldWidth,
+              child: field,
+            );
+          }).toList(),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          // Gradient header
-          Container(
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: AppColors.gradient,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(32),
-                bottomRight: Radius.circular(32),
-              ),
-            ),
-            child: SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(8, 4, 24, 28),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      onPressed: _isLoading
-                          ? null
-                          : () => Navigator.of(context).maybePop(),
-                      icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                          color: Colors.white, size: 20),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Create Account',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'Join ShopMate and start shopping today.',
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.85),
-                              fontSize: 14.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isTablet = constraints.maxWidth >= 600;
+          final isDesktop = constraints.maxWidth >= 900;
+          final isWide = constraints.maxWidth >= 650;
 
-          // Form
-          Expanded(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 460),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _sectionCard(
-                          icon: Icons.person_rounded,
-                          title: 'Personal Information',
-                          subtitle: 'Your login details',
-                          children: [
-                            _buildField(
-                              label: 'Full name',
-                              icon: Icons.person_outline,
-                              controller: _nameController,
-                              validator: (value) {
-                                if (value == null ||
-                                    value.trim().length < 2) {
-                                  return 'Name must be at least 2 characters.';
-                                }
-                                return null;
-                              },
-                            ),
-                            _buildField(
-                              label: 'Email address',
-                              icon: Icons.email_outlined,
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              textCapitalization: TextCapitalization.none,
-                              validator: (value) {
-                                final email = value?.trim() ?? '';
-                                if (email.isEmpty ||
-                                    !RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
-                                        .hasMatch(email)) {
-                                  return 'Enter a valid email address.';
-                                }
-                                return null;
-                              },
-                            ),
-                            _buildPasswordField(
-                              label: 'Password',
-                              icon: Icons.lock_outline,
-                              controller: _passwordController,
-                              obscure: _obscurePassword,
-                              onToggle: () => setState(
-                                  () => _obscurePassword = !_obscurePassword),
-                              validator: (value) {
-                                if (value == null || value.length < 6) {
-                                  return 'Password must be at least 6 characters.';
-                                }
-                                return null;
-                              },
-                            ),
-                            _buildPasswordField(
-                              label: 'Confirm password',
-                              icon: Icons.lock_reset_outlined,
-                              controller: _confirmPasswordController,
-                              obscure: _obscureConfirmPassword,
-                              onToggle: () => setState(() =>
-                                  _obscureConfirmPassword =
-                                      !_obscureConfirmPassword),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please confirm your password.';
-                                }
-                                if (value != _passwordController.text) {
-                                  return 'Passwords do not match.';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
+          return Column(
+            children: [
+              // Gradient Header
+              Container(
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  gradient: AppColors.gradient,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(32),
+                    bottomRight: Radius.circular(32),
+                  ),
+                ),
+                child: SafeArea(
+                  bottom: false,
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 850,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          isDesktop ? 24 : 8,
+                          4,
+                          24,
+                          isTablet ? 36 : 28,
                         ),
-                        const SizedBox(height: 20),
-                        _sectionCard(
-                          icon: Icons.location_on_rounded,
-                          title: 'Your Permanent Address',
-                          subtitle: 'Saved for your future orders',
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _buildField(
-                              label: 'Division',
-                              icon: Icons.map_outlined,
-                              controller: _divisionController,
+                            IconButton(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => Navigator.of(context).maybePop(),
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new_rounded,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
-                            _buildField(
-                              label: 'City',
-                              icon: Icons.location_city_outlined,
-                              controller: _cityController,
-                            ),
-                            _buildField(
-                              label: 'Area Name',
-                              icon: Icons.location_on_outlined,
-                              controller: _areaController,
-                            ),
-                            _buildField(
-                              label: 'House No. / House Name',
-                              icon: Icons.home_outlined,
-                              controller: _houseController,
-                            ),
-                            _buildField(
-                              label: 'Mobile Number',
-                              icon: Icons.phone_outlined,
-                              controller: _phoneController,
-                              keyboardType: TextInputType.phone,
-                              textCapitalization: TextCapitalization.none,
-                              validator: (value) {
-                                final phone = value?.trim() ?? '';
-                                if (!RegExp(r'^[0-9+\-\s]{10,15}$')
-                                    .hasMatch(phone)) {
-                                  return 'Enter a valid mobile number.';
-                                }
-                                return null;
-                              },
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 26),
-                        FilledButton(
-                          onPressed: _isLoading ? null : _signup,
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: Colors.white,
+                            Padding(
+                              padding: const EdgeInsets.only(left: 16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Create Account',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: isDesktop ? 34 : 28,
+                                      fontWeight: FontWeight.w800,
+                                    ),
                                   ),
-                                )
-                              : const Text('Create Account'),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Join ShopMate and start shopping today.',
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.85,
+                                      ),
+                                      fontSize: 14.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 10),
-                        TextButton(
-                          onPressed: _isLoading
-                              ? null
-                              : () => Navigator.of(context).pop(),
-                          child: const Text(
-                            'Already have an account? Login',
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
-        ],
+
+              // Responsive Form
+              Expanded(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      isDesktop ? 32 : 20,
+                      24,
+                      isDesktop ? 32 : 20,
+                      32,
+                    ),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: isDesktop ? 760 : 560,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            _sectionCard(
+                              icon: Icons.person_rounded,
+                              title: 'Personal Information',
+                              subtitle: 'Your login details',
+                              children: [
+                                _buildField(
+                                  label: 'Full name',
+                                  icon: Icons.person_outline,
+                                  controller: _nameController,
+                                  validator: (value) {
+                                    if (value == null ||
+                                        value.trim().length < 2) {
+                                      return 'Name must be at least 2 characters.';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                _buildField(
+                                  label: 'Email address',
+                                  icon: Icons.email_outlined,
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  textCapitalization:
+                                      TextCapitalization.none,
+                                  validator: (value) {
+                                    final email = value?.trim() ?? '';
+
+                                    if (email.isEmpty ||
+                                        !RegExp(
+                                          r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                                        ).hasMatch(email)) {
+                                      return 'Enter a valid email address.';
+                                    }
+
+                                    return null;
+                                  },
+                                ),
+                                _buildPasswordField(
+                                  label: 'Password',
+                                  icon: Icons.lock_outline,
+                                  controller: _passwordController,
+                                  obscure: _obscurePassword,
+                                  onToggle: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.length < 6) {
+                                      return 'Password must be at least 6 characters.';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                _buildPasswordField(
+                                  label: 'Confirm password',
+                                  icon: Icons.lock_reset_outlined,
+                                  controller: _confirmPasswordController,
+                                  obscure: _obscureConfirmPassword,
+                                  onToggle: () {
+                                    setState(() {
+                                      _obscureConfirmPassword =
+                                          !_obscureConfirmPassword;
+                                    });
+                                  },
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please confirm your password.';
+                                    }
+
+                                    if (value != _passwordController.text) {
+                                      return 'Passwords do not match.';
+                                    }
+
+                                    return null;
+                                  },
+                                ),
+                              ],
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            _sectionCard(
+                              icon: Icons.location_on_rounded,
+                              title: 'Your Permanent Address',
+                              subtitle: 'Saved for your future orders',
+                              children: [
+                                _buildAddressFields(isWide),
+                              ],
+                            ),
+
+                            const SizedBox(height: 26),
+
+                            SizedBox(
+                              height: 54,
+                              child: FilledButton(
+                                onPressed: _isLoading ? null : _signup,
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2.5,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : const Text(
+                                        'Create Account',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 15,
+                                        ),
+                                      ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 10),
+
+                            TextButton(
+                              onPressed: _isLoading
+                                  ? null
+                                  : () => Navigator.of(context).pop(),
+                              child: const Text(
+                                'Already have an account? Login',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

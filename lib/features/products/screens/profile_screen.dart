@@ -1,9 +1,11 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/auth/app_theme.dart';
 import 'package:shopmate/features/auth/auth_gate.dart';
 import 'package:shopmate/l10n/app_localizations.dart';
+
 import '../../auth/theme_provider.dart';
 import '../../auth/language_provider.dart';
 import 'cart_screen.dart';
@@ -14,85 +16,82 @@ import '../services/address_service.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-Future<void> _logout(BuildContext context) async {
-  final l10n = AppLocalizations.of(context)!;
+  Future<void> _logout(BuildContext context) async {
+    final l10n = AppLocalizations.of(context)!;
 
-  final shouldLogout = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) {
-      return AlertDialog(
-        icon: Container(
-          padding: const EdgeInsets.all(14),
-          decoration: BoxDecoration(
-            color: AppColors.danger.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.logout_rounded,
-            size: 30,
-            color: AppColors.danger,
-          ),
-        ),
-        title: Text(l10n.logOutQuestion),
-        content: Text(
-          l10n.logoutConfirmation,
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: AppColors.textMuted,
-            height: 1.5,
-          ),
-        ),
-        actionsAlignment: MainAxisAlignment.center,
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.no),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: AppColors.danger,
-              minimumSize: const Size(130, 46),
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          icon: Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: AppColors.danger.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.yesLogout),
+            child: const Icon(
+              Icons.logout_rounded,
+              size: 30,
+              color: AppColors.danger,
+            ),
           ),
-        ],
+          title: Text(l10n.logOutQuestion),
+          content: Text(
+            l10n.logoutConfirmation,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              color: AppColors.textMuted,
+              height: 1.5,
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: Text(l10n.no),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.danger,
+                minimumSize: const Size(130, 46),
+              ),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: Text(l10n.yesLogout),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (shouldLogout != true || !context.mounted) return;
+
+    try {
+      await FirebaseAuth.instance.signOut();
+
+      if (!context.mounted) return;
+
+      Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (_) => const AuthGate(),
+        ),
+        (route) => false,
       );
-    },
-  );
+    } catch (e) {
+      if (!context.mounted) return;
 
-  if (shouldLogout != true || !context.mounted) return;
-
-  try {
-    await FirebaseAuth.instance.signOut();
-
-    if (!context.mounted) return;
-
-    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
-      MaterialPageRoute(
-        builder: (_) => const AuthGate(),
-      ),
-      (route) => false,
-    );
-  } catch (e) {
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Logout failed: $e'),
-        backgroundColor: AppColors.danger,
-      ),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Logout failed: $e'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
   }
-}
-
 
   Future<void> _showAppearanceSettings(
     BuildContext context,
     WidgetRef ref,
   ) async {
-    
-
     await showDialog<void>(
       context: context,
       builder: (dialogContext) {
@@ -233,7 +232,9 @@ Future<void> _logout(BuildContext context) async {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const SizedBox(
                       height: 100,
-                      child: Center(child: CircularProgressIndicator()),
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
                     );
                   }
 
@@ -317,7 +318,10 @@ Future<void> _logout(BuildContext context) async {
                       setDialogState(() {});
                     }
                   },
-                  icon: const Icon(Icons.edit_outlined, size: 18),
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                  ),
                   label: Text(l10n.editAddress),
                 ),
               ],
@@ -343,7 +347,11 @@ Future<void> _logout(BuildContext context) async {
             color: AppColors.primary.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, size: 18, color: AppColors.primary),
+          child: Icon(
+            icon,
+            size: 18,
+            color: AppColors.primary,
+          ),
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -405,190 +413,248 @@ Future<void> _logout(BuildContext context) async {
       appBar: AppBar(
         title: Text(l10n.myProfile),
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(20, 8, 20, 32),
-        children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 26),
-            decoration: BoxDecoration(
-              gradient: AppColors.gradient,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 24,
-                  offset: const Offset(0, 12),
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final isDesktop = constraints.maxWidth >= 900;
+
+          return Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 850,
+              ),
+              child: ListView(
+                padding: EdgeInsets.fromLTRB(
+                  isDesktop ? 28 : 20,
+                  8,
+                  isDesktop ? 28 : 20,
+                  32,
                 ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.6),
-                      width: 2,
+                children: [
+                  // Profile Header
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(
+                      24,
+                      28,
+                      24,
+                      26,
                     ),
-                  ),
-                  child: CircleAvatar(
-                    radius: 42,
-                    backgroundColor: Colors.white,
-                    backgroundImage: user?.photoURL != null
-                        ? NetworkImage(user!.photoURL!)
-                        : null,
-                    child: user?.photoURL == null
-                        ? const Icon(
-                            Icons.person_rounded,
-                            size: 48,
-                            color: AppColors.primary,
-                          )
-                        : null,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  name,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 23,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  email,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.8),
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.18),
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.workspace_premium_rounded,
-                        size: 16,
-                        color: Colors.white,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        l10n.shopMateMember,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 13,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.gradient,
+                      borderRadius: BorderRadius.circular(28),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          blurRadius: 24,
+                          offset: const Offset(0, 12),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.6),
+                              width: 2,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 42,
+                            backgroundColor: Colors.white,
+                            backgroundImage: user?.photoURL != null
+                                ? NetworkImage(user!.photoURL!)
+                                : null,
+                            child: user?.photoURL == null
+                                ? const Icon(
+                                    Icons.person_rounded,
+                                    size: 48,
+                                    color: AppColors.primary,
+                                  )
+                                : null,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          name,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 23,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          email,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(30),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.workspace_premium_rounded,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                l10n.shopMateMember,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
 
-          _sectionLabel(l10n.myShopping),
-          _ProfileMenuTile(
-            icon: Icons.favorite_rounded,
-            title: l10n.myWishlist,
-            subtitle: l10n.wishlistSubtitle,
-            color: const Color(0xFFE91E63),
-            onTap: () => _openPage(context, const WishlistScreen()),
-          ),
-          _ProfileMenuTile(
-            icon: Icons.receipt_long_rounded,
-            title: l10n.orderHistory,
-            subtitle: l10n.orderHistorySubtitle,
-            color: AppColors.primary,
-            onTap: () => _openPage(context, const OrderHistoryScreen()),
-          ),
-          _ProfileMenuTile(
-            icon: Icons.shopping_cart_rounded,
-            title: l10n.myCart,
-            subtitle: l10n.cartSubtitle,
-            color: AppColors.accent,
-            onTap: () => _openPage(context, const CartScreen()),
-          ),
-          const SizedBox(height: 22),
+                  const SizedBox(height: 30),
 
-          _sectionLabel(l10n.account),
-          _ProfileMenuTile(
-            icon: Icons.manage_accounts_rounded,
-            title: l10n.accountInformation,
-            subtitle: l10n.accountInfoSubtitle,
-            color: const Color(0xFF2F80ED),
-            onTap: () => _showAccountInformation(context, name, email),
-          ),
-          _ProfileMenuTile(
-            icon: Icons.palette_outlined,
-            title: l10n.appearanceSettings,
-            subtitle: l10n.changeThemeSubtitle,
-            color: const Color(0xFF8E44AD),
-            onTap: () => _showAppearanceSettings(context, ref),
-          ),
-          _ProfileMenuTile(
-            icon: Icons.language_rounded,
-            title: l10n.languageSettings,
-            subtitle: l10n.changeLanguageSubtitle,
-            color: const Color(0xFF16A085),
-            onTap: () => _showLanguageSettings(context, ref),
-          ),
-          const SizedBox(height: 22),
+                  _sectionLabel(l10n.myShopping),
 
-          OutlinedButton.icon(
-            onPressed: () => _logout(context),
-            icon: const Icon(Icons.logout_rounded),
-            label: Text(
-              l10n.logout,
-              style: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 15,
+                  _ProfileMenuTile(
+                    icon: Icons.favorite_rounded,
+                    title: l10n.myWishlist,
+                    subtitle: l10n.wishlistSubtitle,
+                    color: const Color(0xFFE91E63),
+                    onTap: () => _openPage(
+                      context,
+                      const WishlistScreen(),
+                    ),
+                  ),
+
+                  _ProfileMenuTile(
+                    icon: Icons.receipt_long_rounded,
+                    title: l10n.orderHistory,
+                    subtitle: l10n.orderHistorySubtitle,
+                    color: AppColors.primary,
+                    onTap: () => _openPage(
+                      context,
+                      const OrderHistoryScreen(),
+                    ),
+                  ),
+
+                  _ProfileMenuTile(
+                    icon: Icons.shopping_cart_rounded,
+                    title: l10n.myCart,
+                    subtitle: l10n.cartSubtitle,
+                    color: AppColors.accent,
+                    onTap: () => _openPage(
+                      context,
+                      const CartScreen(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  _sectionLabel(l10n.account),
+
+                  _ProfileMenuTile(
+                    icon: Icons.manage_accounts_rounded,
+                    title: l10n.accountInformation,
+                    subtitle: l10n.accountInfoSubtitle,
+                    color: const Color(0xFF2F80ED),
+                    onTap: () => _showAccountInformation(
+                      context,
+                      name,
+                      email,
+                    ),
+                  ),
+
+                  _ProfileMenuTile(
+                    icon: Icons.palette_outlined,
+                    title: l10n.appearanceSettings,
+                    subtitle: l10n.changeThemeSubtitle,
+                    color: const Color(0xFF8E44AD),
+                    onTap: () => _showAppearanceSettings(
+                      context,
+                      ref,
+                    ),
+                  ),
+
+                  _ProfileMenuTile(
+                    icon: Icons.language_rounded,
+                    title: l10n.languageSettings,
+                    subtitle: l10n.changeLanguageSubtitle,
+                    color: const Color(0xFF16A085),
+                    onTap: () => _showLanguageSettings(
+                      context,
+                      ref,
+                    ),
+                  ),
+
+                  const SizedBox(height: 22),
+
+                  OutlinedButton.icon(
+                    onPressed: () => _logout(context),
+                    icon: const Icon(Icons.logout_rounded),
+                    label: Text(
+                      l10n.logout,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppColors.danger,
+                      backgroundColor:
+                          AppColors.danger.withValues(alpha: 0.05),
+                      side: BorderSide(
+                        color: AppColors.danger.withValues(alpha: 0.5),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Center(
+                    child: Text(
+                      l10n.profileFooter,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.danger,
-              backgroundColor: AppColors.danger.withValues(alpha: 0.05),
-              side: BorderSide(
-                color: AppColors.danger.withValues(alpha: 0.5),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Center(
-            child: Text(
-              l10n.profileFooter,
-              style: const TextStyle(
-                fontSize: 12.5,
-                color: AppColors.textMuted,
-              ),
-            ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
 }
+
+// Edit Permanent Address Dialog
 
 class _EditPermanentAddressDialog extends StatefulWidget {
   final AddressService addressService;
@@ -752,7 +818,9 @@ class _EditPermanentAddressDialogState
       content: _isLoading
           ? const SizedBox(
               height: 100,
-              child: Center(child: CircularProgressIndicator()),
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
             )
           : SizedBox(
               width: 400,
@@ -827,6 +895,8 @@ class _EditPermanentAddressDialogState
   }
 }
 
+// Profile Menu Tile
+
 class _ProfileMenuTile extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -877,7 +947,10 @@ class _ProfileMenuTile extends StatelessWidget {
                     color: color.withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(icon, color: color),
+                  child: Icon(
+                    icon,
+                    color: color,
+                  ),
                 ),
                 const SizedBox(width: 14),
                 Expanded(

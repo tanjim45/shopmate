@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shopmate/features/auth/app_theme.dart';
 import '../products/screens/product_list_screen.dart';
-import 'get_start_screen.dart';
+import '../products/screens/get_start_screen.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});

@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/l10n/app_localizations.dart';
@@ -6,6 +7,7 @@ import 'package:shopmate/features/products/providers/cart_provider.dart';
 import 'package:shopmate/features/products/screens/cart_screen.dart';
 import 'package:shopmate/features/products/screens/order_history_screen.dart';
 import 'package:shopmate/features/products/screens/wishlist_screen.dart';
+
 import '../models/product_model.dart';
 import '../providers/product_provider.dart';
 import '../providers/wishlist_provider.dart';
@@ -58,9 +60,74 @@ class _ProductListScreenState
     super.dispose();
   }
 
+  void _openProfile() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const ProfileScreen(),
+      ),
+    );
+  }
+
+  void _openOrders() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const OrderHistoryScreen(),
+      ),
+    );
+  }
+
+  void _openWishlist() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const WishlistScreen(),
+      ),
+    );
+  }
+
+  void _openCart() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => const CartScreen(),
+      ),
+    );
+  }
+
+  void _applyPriceFilter(AppLocalizations l10n) {
+    final minText = _minPriceController.text.trim();
+    final maxText = _maxPriceController.text.trim();
+
+    final min = double.tryParse(minText);
+    final max = double.tryParse(maxText);
+
+    String? error;
+
+    if (minText.isNotEmpty && (min == null || min < 0)) {
+      error = l10n.validMinPrice;
+    } else if (maxText.isNotEmpty && (max == null || max < 0)) {
+      error = l10n.validMaxPrice;
+    } else if (min != null && max != null && min > max) {
+      error = l10n.minPriceExceedsMax;
+    }
+
+    setState(() {
+      _priceFilterError = error;
+    });
+  }
+
+  void _resetPriceFilter() {
+    _minPriceController.clear();
+    _maxPriceController.clear();
+
+    setState(() {
+      _priceFilterError = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
     final paginationState = ref.watch(productsPaginationProvider);
     final cartItems = ref.watch(cartProvider);
     final wishlistIds = ref.watch(wishlistProvider);
@@ -69,8 +136,8 @@ class _ProductListScreenState
       0,
       (total, item) => total + item.quantity,
     );
-    final wishlistCount = wishlistIds.length;
 
+    final wishlistCount = wishlistIds.length;
     final products = paginationState.products;
 
     final categories = <String>[
@@ -139,71 +206,66 @@ class _ProductListScreenState
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
-           IconButton(
-            tooltip: l10n.myProfile,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const ProfileScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.account_circle_outlined),
-          ),
-  
-          IconButton(
-            tooltip: l10n.myOrders,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const OrderHistoryScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.receipt_long_outlined),
-          ),
-
-
           IconButton(
             tooltip: l10n.myWishlist,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => const WishlistScreen(),
-                ),
-              );
-            },
+            onPressed: _openWishlist,
             icon: Badge(
               isLabelVisible: wishlistCount > 0,
               label: Text('$wishlistCount'),
               child: const Icon(Icons.favorite_border),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: IconButton(
-              tooltip: l10n.myCart,
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const CartScreen(),
-                  ),
-                );
-              },
-              icon: Badge(
-                isLabelVisible: cartCount > 0,
-                label: Text('$cartCount'),
-                child: const Icon(Icons.shopping_cart_outlined),
-              ),
+          IconButton(
+            tooltip: l10n.myCart,
+            onPressed: _openCart,
+            icon: Badge(
+              isLabelVisible: cartCount > 0,
+              label: Text('$cartCount'),
+              child: const Icon(Icons.shopping_cart_outlined),
             ),
           ),
+          PopupMenuButton<String>(
+            tooltip: 'More options',
+            onSelected: (value) {
+              if (value == 'profile') {
+                _openProfile();
+              } else if (value == 'orders') {
+                _openOrders();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'profile',
+                child: Row(
+                  children: [
+                    const Icon(Icons.account_circle_outlined),
+                    const SizedBox(width: 12),
+                    Text(l10n.myProfile),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'orders',
+                child: Row(
+                  children: [
+                    const Icon(Icons.receipt_long_outlined),
+                    const SizedBox(width: 12),
+                    Text(l10n.myOrders),
+                  ],
+                ),
+              ),
+            ],
+            icon: const Icon(Icons.more_vert),
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: products.isEmpty && paginationState.isLoadingMore
           ? const Center(
               child: CircularProgressIndicator(),
             )
-          : products.isEmpty && paginationState.errorMessage != null
+          : products.isEmpty &&
+                  paginationState.errorMessage != null
               ? Center(
                   child: Padding(
                     padding: const EdgeInsets.all(24),
@@ -216,19 +278,19 @@ class _ProductListScreenState
                           color: Colors.grey,
                         ),
                         const SizedBox(height: 12),
-                       Text(
-                              l10n.loadProductsError,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              l10n.checkInternet,
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                            ),
+                        Text(
+                          l10n.loadProductsError,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.checkInternet,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium,
+                        ),
                         const SizedBox(height: 16),
                         FilledButton.icon(
                           onPressed: () {
@@ -245,6 +307,7 @@ class _ProductListScreenState
                 )
               : Column(
                   children: [
+                    // Search
                     Padding(
                       padding: const EdgeInsets.fromLTRB(
                         16,
@@ -275,9 +338,8 @@ class _ProductListScreenState
                                 )
                               : null,
                           filled: true,
-                          fillColor: Theme.of(context)
-                              .colorScheme
-                              .surfaceContainerHighest
+                          fillColor: theme
+                              .colorScheme.surfaceContainerHighest
                               .withValues(alpha: 0.4),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(16),
@@ -349,88 +411,85 @@ class _ProductListScreenState
 
                     const SizedBox(height: 12),
 
-                    // Price filter
+                    // Price filter - responsive
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _minPriceController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              decoration: InputDecoration(
-                                labelText: l10n.minPrice,
-                                prefixText: '\$ ',
-                                border: OutlineInputBorder(),
-                              ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final isNarrow = constraints.maxWidth < 500;
+
+                          final minField = TextField(
+                            controller: _minPriceController,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                              decimal: true,
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: TextField(
-                              controller: _maxPriceController,
-                              keyboardType:
-                                  const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              decoration: InputDecoration(
-                                labelText: l10n.maxPrice,
-                                prefixText: '\$ ',
-                                border: OutlineInputBorder(),
-                              ),
+                            decoration: InputDecoration(
+                              labelText: l10n.minPrice,
+                              prefixText: '\$ ',
+                              border: const OutlineInputBorder(),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          IconButton.filled(
-                            tooltip: l10n.applyPriceFilter,
-                            onPressed: () {
-                              final minText =
-                                  _minPriceController.text.trim();
-                              final maxText =
-                                  _maxPriceController.text.trim();
+                          );
 
-                              final min =
-                                  double.tryParse(minText);
-                              final max =
-                                  double.tryParse(maxText);
+                          final maxField = TextField(
+                            controller: _maxPriceController,
+                            keyboardType:
+                                const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: l10n.maxPrice,
+                              prefixText: '\$ ',
+                              border: const OutlineInputBorder(),
+                            ),
+                          );
 
-                              String? error;
+                          final actionButtons = Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton.filled(
+                                tooltip: l10n.applyPriceFilter,
+                                onPressed: () =>
+                                    _applyPriceFilter(l10n),
+                                icon: const Icon(Icons.filter_alt),
+                              ),
+                              TextButton(
+                                onPressed: _resetPriceFilter,
+                                child: Text(l10n.reset),
+                              ),
+                            ],
+                          );
 
-                              if (minText.isNotEmpty &&
-                                  (min == null || min < 0)) {
-                                error = l10n.validMinPrice;
-                              } else if (maxText.isNotEmpty &&
-                                  (max == null || max < 0)) {
-                                error = l10n.validMaxPrice;
-                              } else if (min != null &&
-                                  max != null &&
-                                  min > max) {
-                                error = l10n.minPriceExceedsMax;
-                              }
+                          if (isNarrow) {
+                            return Column(
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(child: minField),
+                                    const SizedBox(width: 12),
+                                    Expanded(child: maxField),
+                                  ],
+                                ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: actionButtons,
+                                ),
+                              ],
+                            );
+                          }
 
-                              setState(() {
-                                _priceFilterError = error;
-                              });
-                            },
-                            icon: const Icon(Icons.filter_alt),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              _minPriceController.clear();
-                              _maxPriceController.clear();
-
-                              setState(() {
-                                _priceFilterError = null;
-                              });
-                            },
-                            child: Text(l10n.reset),
-                          ),
-                        ],
+                          return Row(
+                            children: [
+                              Expanded(child: minField),
+                              const SizedBox(width: 12),
+                              Expanded(child: maxField),
+                              const SizedBox(width: 8),
+                              actionButtons,
+                            ],
+                          );
+                        },
                       ),
                     ),
 
@@ -445,8 +504,7 @@ class _ProductListScreenState
                           child: Text(
                             _priceFilterError!,
                             style: TextStyle(
-                              color:
-                                  Theme.of(context).colorScheme.error,
+                              color: theme.colorScheme.error,
                               fontSize: 13,
                             ),
                           ),
@@ -489,131 +547,147 @@ class _ProductListScreenState
 
                     const SizedBox(height: 12),
 
-                    // Infinite scroll product grid
-                  Expanded(
-                    child: filteredProducts.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off_rounded,
-                                  size: 70,
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .onSurfaceVariant,
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  products.isEmpty
-                                      ? l10n.noProductsAvailable
-                                      : l10n.noProductsFound,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium,
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  products.isEmpty
-                                      ? l10n.tryAgainLater
-                                      : l10n.changeSearchFilters,
-                                  textAlign: TextAlign.center,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium,
-                                ),
-                                if (products.isNotEmpty) ...[
-                                  const SizedBox(height: 16),
-                                  OutlinedButton.icon(
-                                    onPressed: () {
-                                      _searchController.clear();
-                                      setState(() {
-                                        _searchQuery = '';
-                                      });
-                                    },
-                                    icon: const Icon(Icons.refresh),
-                                    label: Text(l10n.clearSearch),
+                    // Product grid
+                    Expanded(
+                      child: filteredProducts.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.search_off_rounded,
+                                    size: 70,
+                                    color: theme
+                                        .colorScheme.onSurfaceVariant,
                                   ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    products.isEmpty
+                                        ? l10n.noProductsAvailable
+                                        : l10n.noProductsFound,
+                                    style:
+                                        theme.textTheme.titleMedium,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    products.isEmpty
+                                        ? l10n.tryAgainLater
+                                        : l10n.changeSearchFilters,
+                                    textAlign: TextAlign.center,
+                                    style: theme.textTheme.bodyMedium,
+                                  ),
+                                  if (products.isNotEmpty) ...[
+                                    const SizedBox(height: 16),
+                                    OutlinedButton.icon(
+                                      onPressed: () {
+                                        _searchController.clear();
+                                        setState(() {
+                                          _searchQuery = '';
+                                        });
+                                      },
+                                      icon: const Icon(Icons.refresh),
+                                      label: Text(l10n.clearSearch),
+                                    ),
+                                  ],
                                 ],
-                              ],
-                            ),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: () async {
-                              await ref
-                                  .read(productsPaginationProvider.notifier)
-                                  .loadInitial();
-                            },
-                              child: GridView.builder(
-                                controller: _scrollController,
-                                physics:
-                                    const AlwaysScrollableScrollPhysics(),
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  0,
-                                  16,
-                                  16,
-                                ),
-                                gridDelegate:
-                                    const SliverGridDelegateWithMaxCrossAxisExtent(
-                                  maxCrossAxisExtent: 240,
-                                  mainAxisSpacing: 16,
-                                  crossAxisSpacing: 16,
-                                  mainAxisExtent: 315,
-                                ),
-                                itemCount: filteredProducts.length +
-                                    ((paginationState.hasMore ||
-                                            paginationState.isLoadingMore ||
-                                            paginationState.errorMessage !=
-                                                null)
-                                        ? 1
-                                        : 0),
-                                itemBuilder: (context, index) {
-                                  if (index >=
-                                      filteredProducts.length) {
-                                    if (paginationState.errorMessage !=
-                                        null) {
-                                      return Center(
-                                        child: Column(
-                                          mainAxisSize:
-                                              MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              l10n.loadMoreError,
-                                              textAlign: TextAlign.center,
+                              ),
+                            )
+                          : RefreshIndicator(
+                              onRefresh: () async {
+                                await ref
+                                    .read(
+                                      productsPaginationProvider.notifier,
+                                    )
+                                    .loadInitial();
+                              },
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final cardHeight =
+                                      constraints.maxWidth < 600
+                                          ? 315.0
+                                          : 330.0;
+
+                                  return GridView.builder(
+                                    controller: _scrollController,
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    padding:
+                                        const EdgeInsets.fromLTRB(
+                                      16,
+                                      0,
+                                      16,
+                                      16,
+                                    ),
+                                    gridDelegate:
+                                        SliverGridDelegateWithMaxCrossAxisExtent(
+                                      maxCrossAxisExtent: 260,
+                                      mainAxisSpacing: 16,
+                                      crossAxisSpacing: 16,
+                                      mainAxisExtent: cardHeight,
+                                    ),
+                                    itemCount:
+                                        filteredProducts.length +
+                                            ((paginationState.hasMore ||
+                                                    paginationState
+                                                        .isLoadingMore ||
+                                                    paginationState
+                                                        .errorMessage !=
+                                                        null)
+                                                ? 1
+                                                : 0),
+                                    itemBuilder: (context, index) {
+                                      if (index >=
+                                          filteredProducts.length) {
+                                        if (paginationState
+                                                .errorMessage !=
+                                            null) {
+                                          return Center(
+                                            child: Column(
+                                              mainAxisSize:
+                                                  MainAxisSize.min,
+                                              children: [
+                                                Text(
+                                                  l10n.loadMoreError,
+                                                  textAlign:
+                                                      TextAlign.center,
+                                                ),
+                                                TextButton.icon(
+                                                  onPressed: () {
+                                                    ref
+                                                        .read(
+                                                          productsPaginationProvider
+                                                              .notifier,
+                                                        )
+                                                        .retry();
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.refresh,
+                                                  ),
+                                                  label:
+                                                      Text(l10n.retry),
+                                                ),
+                                              ],
                                             ),
-                                            TextButton.icon(
-                                              onPressed: () {
-                                                ref
-                                                    .read(
-                                                      productsPaginationProvider
-                                                          .notifier,
-                                                    )
-                                                    .retry();
-                                              },
-                                              icon: const Icon(
-                                                Icons.refresh,
-                                              ),
-                                              label: Text(l10n.retry),
-                                            ),
-                                          ],
-                                        ),
+                                          );
+                                        }
+
+                                        if (paginationState
+                                            .isLoadingMore) {
+                                          return const Center(
+                                            child:
+                                                CircularProgressIndicator(),
+                                          );
+                                        }
+
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      return ProductCard(
+                                        product:
+                                            filteredProducts[index],
                                       );
-                                    }
-
-                                    if (paginationState.isLoadingMore) {
-                                      return const Center(
-                                        child:
-                                            CircularProgressIndicator(),
-                                      );
-                                    }
-
-                                    return const SizedBox.shrink();
-                                  }
-
-                                  return ProductCard(
-                                    product:
-                                        filteredProducts[index],
+                                    },
                                   );
                                 },
                               ),

@@ -296,111 +296,151 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Widget _buildAddressForm() {
-    final l10n = AppLocalizations.of(context)!;
+  final l10n = AppLocalizations.of(context)!;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _addressField(
-          label: l10n.fullName,
-          icon: Icons.person_outline,
-          controller: _nameController,
-          validator: (value) {
-            if (value == null || value.trim().length < 2) {
-              return l10n.enterFullName;
-            }
-            return null;
-          },
-        ),
-        _addressField(
-          label: l10n.mobileNumber,
-          icon: Icons.phone_outlined,
-          controller: _phoneController,
-          keyboardType: TextInputType.phone,
-          validator: (value) {
-            final phone = value?.trim() ?? '';
+  return LayoutBuilder(
+    builder: (context, constraints) {
+      final isWide = constraints.maxWidth >= 550;
 
-            if (!RegExp(r'^[0-9+\-\s]{10,15}$').hasMatch(phone)) {
-              return l10n.validMobileNumber;
-            }
-            return null;
-          },
-        ),
-        _addressField(
-          label: l10n.division,
-          icon: Icons.map_outlined,
-          controller: _divisionController,
-        ),
-        _addressField(
-          label: l10n.city,
-          icon: Icons.location_city_outlined,
-          controller: _cityController,
-        ),
-        _addressField(
-          label: l10n.areaName,
-          icon: Icons.location_on_outlined,
-          controller: _areaController,
-        ),
-        _addressField(
-          label: l10n.houseNumber,
-          icon: Icons.home_outlined,
-          controller: _houseController,
-        ),
-      ],
-    );
-  }
+      return Wrap(
+        spacing: 14,
+        runSpacing: 0,
+        children: [
+          SizedBox(
+            width: isWide
+                ? (constraints.maxWidth - 14) / 2
+                : constraints.maxWidth,
+            child: _addressField(
+              label: l10n.fullName,
+              icon: Icons.person_outline,
+              controller: _nameController,
+              validator: (value) {
+                if (value == null || value.trim().length < 2) {
+                  return l10n.enterFullName;
+                }
+                return null;
+              },
+            ),
+          ),
+          SizedBox(
+            width: isWide
+                ? (constraints.maxWidth - 14) / 2
+                : constraints.maxWidth,
+            child: _addressField(
+              label: l10n.mobileNumber,
+              icon: Icons.phone_outlined,
+              controller: _phoneController,
+              keyboardType: TextInputType.phone,
+              validator: (value) {
+                final phone = value?.trim() ?? '';
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
+                if (!RegExp(r'^[0-9+\-\s]{10,15}$')
+                    .hasMatch(phone)) {
+                  return l10n.validMobileNumber;
+                }
+                return null;
+              },
+            ),
+          ),
+          SizedBox(
+            width: isWide
+                ? (constraints.maxWidth - 14) / 2
+                : constraints.maxWidth,
+            child: _addressField(
+              label: l10n.division,
+              icon: Icons.map_outlined,
+              controller: _divisionController,
+            ),
+          ),
+          SizedBox(
+            width: isWide
+                ? (constraints.maxWidth - 14) / 2
+                : constraints.maxWidth,
+            child: _addressField(
+              label: l10n.city,
+              icon: Icons.location_city_outlined,
+              controller: _cityController,
+            ),
+          ),
+          SizedBox(
+            width: isWide
+                ? (constraints.maxWidth - 14) / 2
+                : constraints.maxWidth,
+            child: _addressField(
+              label: l10n.areaName,
+              icon: Icons.location_on_outlined,
+              controller: _areaController,
+            ),
+          ),
+          SizedBox(
+            width: isWide
+                ? (constraints.maxWidth - 14) / 2
+                : constraints.maxWidth,
+            child: _addressField(
+              label: l10n.houseNumber,
+              icon: Icons.home_outlined,
+              controller: _houseController,
+            ),
+          ),
+        ],
+      );
+    },
+  );
+}
 
-    final cartItems = ref.watch(cartProvider);
-    final cartController = ref.read(cartProvider.notifier);
-    final theme = Theme.of(context);
+@override
+Widget build(BuildContext context) {
+  final l10n = AppLocalizations.of(context)!;
 
-    final subtotal = cartController.totalPrice;
-    const deliveryFee = 5.00;
-    final total = subtotal + (cartItems.isEmpty ? 0 : deliveryFee);
+  final cartItems = ref.watch(cartProvider);
+  final cartController = ref.read(cartProvider.notifier);
+  final theme = Theme.of(context);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.checkout,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+  final subtotal = cartController.totalPrice;
+  const deliveryFee = 5.00;
+  final total = subtotal + (cartItems.isEmpty ? 0 : deliveryFee);
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        l10n.checkout,
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
-      body: cartItems.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.shopping_cart_outlined,
-                    size: 72,
-                    color: theme.colorScheme.primary,
+    ),
+    body: cartItems.isEmpty
+        ? Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.shopping_cart_outlined,
+                  size: 72,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.cartEmpty,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.cartEmpty,
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  FilledButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: Text(l10n.goBack),
-                  ),
-                ],
-              ),
-            )
-          : _isLoadingAddress
-              ? const Center(child: CircularProgressIndicator())
-              : Form(
-                  key: _formKey,
-                  child: ListView(
-                    padding: const EdgeInsets.all(20),
+                ),
+                const SizedBox(height: 12),
+                FilledButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(l10n.goBack),
+                ),
+              ],
+            ),
+          )
+        : _isLoadingAddress
+            ? const Center(child: CircularProgressIndicator())
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final isDesktop = constraints.maxWidth >= 900;
+
+                  final deliveryInformation = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         l10n.deliveryInformation,
@@ -419,7 +459,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             });
                           },
                           contentPadding: EdgeInsets.zero,
-                          controlAffinity: ListTileControlAffinity.leading,
+                          controlAffinity:
+                              ListTileControlAffinity.leading,
                           title: Text(
                             l10n.sameAsPermanentAddress,
                             style: const TextStyle(
@@ -444,9 +485,12 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         const SizedBox(height: 12),
                         _buildAddressForm(),
                       ],
+                    ],
+                  );
 
-                      const SizedBox(height: 28),
-
+                  final orderInformation = Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
                         l10n.deliveryMethod,
                         style: theme.textTheme.titleLarge?.copyWith(
@@ -459,6 +503,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         groupValue: _deliveryMethod,
                         onChanged: (value) {
                           if (value == null) return;
+
                           setState(() {
                             _deliveryMethod = value;
                           });
@@ -498,7 +543,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       Container(
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
-                          color: theme.colorScheme.surfaceContainerHighest
+                          color: theme.colorScheme
+                              .surfaceContainerHighest
                               .withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(18),
                         ),
@@ -516,9 +562,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                             const SizedBox(height: 12),
                             _summaryRow(
                               l10n.deliveryFee,
-                              cartItems.isEmpty
-                                  ? '\$0.00'
-                                  : '\$${deliveryFee.toStringAsFixed(2)}',
+                              '\$${deliveryFee.toStringAsFixed(2)}',
                             ),
                             const Divider(height: 28),
                             _summaryRow(
@@ -537,7 +581,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         child: FilledButton.icon(
                           onPressed:
                               _isPlacingOrder ? null : _placeOrder,
-                          icon: const Icon(Icons.check_circle_outline),
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                          ),
                           label: Text(
                             _isPlacingOrder
                                 ? l10n.placingOrder
@@ -557,12 +603,53 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 20),
                     ],
-                  ),
-                ),
-    );
-  }
+                  );
+
+                  return Form(
+                    key: _formKey,
+                    child: Center(
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: 1200,
+                        ),
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.all(
+                            isDesktop ? 28 : 16,
+                          ),
+                          child: isDesktop
+                              ? Row(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Expanded(
+                                      flex: 6,
+                                      child: deliveryInformation,
+                                    ),
+                                    const SizedBox(width: 32),
+                                    Expanded(
+                                      flex: 5,
+                                      child: orderInformation,
+                                    ),
+                                  ],
+                                )
+                              : Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    deliveryInformation,
+                                    const SizedBox(height: 28),
+                                    orderInformation,
+                                  ],
+                                ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+  );
+}
 
   Widget _summaryRow(
     String label,
