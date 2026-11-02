@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
 
 import '../models/product_model.dart';
 import '../providers/product_provider.dart';
@@ -15,32 +16,31 @@ class WishlistScreen extends ConsumerWidget {
     final favoriteIds = ref.watch(wishlistProvider);
     final productsAsync = ref.watch(productsProvider);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'My Wishlist',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.myWishlist,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           if (favoriteIds.isNotEmpty)
             IconButton(
-              tooltip: 'Clear Wishlist',
+              tooltip: l10n.clearWishlist,
               icon: const Icon(Icons.delete_sweep_outlined),
               onPressed: () {
                 showDialog<void>(
                   context: context,
                   builder: (dialogContext) => AlertDialog(
-                    title: const Text('Clear Wishlist?'),
-                    content: const Text(
-                      'Remove all products from your Wishlist?',
-                    ),
+                    title: Text(l10n.clearWishlistQuestion),
+                    content: Text(l10n.removeAllWishlistProducts),
                     actions: [
                       TextButton(
                         onPressed: () {
                           Navigator.pop(dialogContext);
                         },
-                        child: const Text('Cancel'),
+                        child: Text(l10n.cancel),
                       ),
                       FilledButton(
                         onPressed: () {
@@ -49,7 +49,7 @@ class WishlistScreen extends ConsumerWidget {
                               .clearWishlist();
                           Navigator.pop(dialogContext);
                         },
-                        child: const Text('Clear'),
+                        child: Text(l10n.clear),
                       ),
                     ],
                   ),
@@ -66,13 +66,13 @@ class WishlistScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Products load kora jayni!'),
+              Text(l10n.productsLoadFailed),
               const SizedBox(height: 12),
               FilledButton(
                 onPressed: () {
                   ref.invalidate(productsProvider);
                 },
-                child: const Text('Try Again'),
+                child: Text(l10n.tryAgain),
               ),
             ],
           ),
@@ -95,16 +95,16 @@ class WishlistScreen extends ConsumerWidget {
                       color: theme.colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Your Wishlist is empty',
-                      style: TextStyle(
+                    Text(
+                      l10n.yourWishlistEmpty,
+                      style: const TextStyle(
                         fontSize: 21,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Tap the heart on a product to save it here.',
+                    Text(
+                      l10n.tapHeartToSave,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -113,7 +113,7 @@ class WishlistScreen extends ConsumerWidget {
                         Navigator.pop(context);
                       },
                       icon: const Icon(Icons.shopping_bag_outlined),
-                      label: const Text('Explore Products'),
+                      label: Text(l10n.exploreProducts),
                     ),
                   ],
                 ),
@@ -131,6 +131,7 @@ class WishlistScreen extends ConsumerWidget {
 
               return _WishlistProductCard(
                 product: product,
+                removeTooltip: l10n.removeFromWishlist,
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -148,8 +149,8 @@ class WishlistScreen extends ConsumerWidget {
                   ScaffoldMessenger.of(context)
                     ..hideCurrentSnackBar()
                     ..showSnackBar(
-                      const SnackBar(
-                        content: Text('Removed from Wishlist'),
+                      SnackBar(
+                        content: Text(l10n.removedFromWishlist),
                       ),
                     );
                 },
@@ -166,11 +167,13 @@ class _WishlistProductCard extends StatelessWidget {
   final Product product;
   final VoidCallback onTap;
   final VoidCallback onRemove;
+  final String removeTooltip;
 
   const _WishlistProductCard({
     required this.product,
     required this.onTap,
     required this.onRemove,
+    required this.removeTooltip,
   });
 
   @override
@@ -247,7 +250,7 @@ class _WishlistProductCard extends StatelessWidget {
                 ),
               ),
               IconButton(
-                tooltip: 'Remove from Wishlist',
+                tooltip: removeTooltip,
                 onPressed: onRemove,
                 icon: const Icon(
                   Icons.favorite,

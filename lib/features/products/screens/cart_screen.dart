@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/products/screens/checkout_screen.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
+
 import '../providers/cart_provider.dart';
 
 class CartScreen extends ConsumerWidget {
@@ -12,39 +14,38 @@ class CartScreen extends ConsumerWidget {
     final cartItems = ref.watch(cartProvider);
     final cartController = ref.read(cartProvider.notifier);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'My Cart',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.myCart,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           if (cartItems.isNotEmpty)
             IconButton(
-              tooltip: 'Clear Cart',
+              tooltip: l10n.clearCart,
               onPressed: () {
                 showDialog<void>(
                   context: context,
                   builder: (dialogContext) {
                     return AlertDialog(
-                      title: const Text('Clear Cart?'),
-                      content: const Text(
-                        'Are you sure you want to remove all products?',
-                      ),
+                      title: Text(l10n.clearCartQuestion),
+                      content: Text(l10n.clearCartConfirmation),
                       actions: [
                         TextButton(
                           onPressed: () {
                             Navigator.pop(dialogContext);
                           },
-                          child: const Text('Cancel'),
+                          child: Text(l10n.cancel),
                         ),
                         FilledButton(
                           onPressed: () {
                             cartController.clearCart();
                             Navigator.pop(dialogContext);
                           },
-                          child: const Text('Clear'),
+                          child: Text(l10n.clear),
                         ),
                       ],
                     );
@@ -68,16 +69,16 @@ class CartScreen extends ConsumerWidget {
                       color: theme.colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'Your cart is empty',
-                      style: TextStyle(
+                    Text(
+                      l10n.yourCartEmpty,
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
-                    const Text(
-                      'Add some products to start shopping.',
+                    Text(
+                      l10n.addProductsToStart,
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 20),
@@ -85,7 +86,7 @@ class CartScreen extends ConsumerWidget {
                       onPressed: () {
                         Navigator.pop(context);
                       },
-                      child: const Text('Continue Shopping'),
+                      child: Text(l10n.continueShopping),
                     ),
                   ],
                 ),
@@ -114,21 +115,20 @@ class CartScreen extends ConsumerWidget {
                           child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              
-                                        Container(
-                                          width: 96,
-                                          height: 116,
-                                          padding: const EdgeInsets.all(10),
-                                          decoration: BoxDecoration(
-                                            color: theme.colorScheme.surfaceContainerHighest
-                                                .withValues(alpha: 0.5),
-                                            borderRadius: BorderRadius.circular(16),
-                                            border: Border.all(
-                                              color: theme.colorScheme.outlineVariant
-                                                  .withValues(alpha: 0.5),
-                                            ),
-                                          ),
-
+                              Container(
+                                width: 96,
+                                height: 116,
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: theme
+                                      .colorScheme.surfaceContainerHighest
+                                      .withValues(alpha: 0.5),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: theme.colorScheme.outlineVariant
+                                        .withValues(alpha: 0.5),
+                                  ),
+                                ),
                                 child: Image.network(
                                   product.image,
                                   fit: BoxFit.contain,
@@ -142,7 +142,8 @@ class CartScreen extends ConsumerWidget {
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       product.title,
@@ -155,9 +156,10 @@ class CartScreen extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      '\$${product.price.toStringAsFixed(2)} each',
+                                      '\$${product.price.toStringAsFixed(2)} ${l10n.each}',
                                       style: TextStyle(
-                                        color: theme.colorScheme.onSurfaceVariant,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                     const SizedBox(height: 8),
@@ -172,22 +174,26 @@ class CartScreen extends ConsumerWidget {
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                       
-                                            IconButton.filledTonal(
-                                              onPressed: () {
-                                                cartController.decreaseQuantity(product.id);
-                                              },
-                                              icon: const Icon(Icons.remove, size: 18),
-                                              tooltip: 'Decrease quantity',
-                                              visualDensity: VisualDensity.compact,
-                                              constraints: const BoxConstraints(
-                                                minWidth: 36,
-                                                minHeight: 36,
-                                              ),
-                                              padding: EdgeInsets.zero,
-                                            ),
-
-                                      Text(
+                                        IconButton.filledTonal(
+                                          onPressed: () {
+                                            cartController.decreaseQuantity(
+                                              product.id,
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.remove,
+                                            size: 18,
+                                          ),
+                                          tooltip: l10n.decreaseQuantity,
+                                          visualDensity:
+                                              VisualDensity.compact,
+                                          constraints: const BoxConstraints(
+                                            minWidth: 36,
+                                            minHeight: 36,
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                        ),
+                                        Text(
                                           '${item.quantity}',
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
@@ -203,8 +209,9 @@ class CartScreen extends ConsumerWidget {
                                           icon: const Icon(
                                             Icons.add_circle_outline,
                                           ),
-                                          tooltip: 'Increase quantity',
-                                          visualDensity: VisualDensity.compact,
+                                          tooltip: l10n.increaseQuantity,
+                                          visualDensity:
+                                              VisualDensity.compact,
                                         ),
                                         const Spacer(),
                                         IconButton(
@@ -216,9 +223,9 @@ class CartScreen extends ConsumerWidget {
                                             ScaffoldMessenger.of(context)
                                               ..hideCurrentSnackBar()
                                               ..showSnackBar(
-                                                const SnackBar(
+                                                SnackBar(
                                                   content: Text(
-                                                    'Product removed from cart',
+                                                    l10n.productRemovedFromCart,
                                                   ),
                                                 ),
                                               );
@@ -227,7 +234,7 @@ class CartScreen extends ConsumerWidget {
                                             Icons.delete_outline,
                                             color: Colors.red,
                                           ),
-                                          tooltip: 'Remove product',
+                                          tooltip: l10n.removeProduct,
                                         ),
                                       ],
                                     ),
@@ -263,7 +270,7 @@ class CartScreen extends ConsumerWidget {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Total Items'),
+                            Text(l10n.totalItems),
                             Text(
                               '${cartController.totalQuantity}',
                               style: const TextStyle(
@@ -273,63 +280,68 @@ class CartScreen extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 10),
-                        
-                                  Container(
-                                    width: double.infinity,
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primaryContainer
-                                          .withValues(alpha: 0.45),
-                                      borderRadius: BorderRadius.circular(16),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer
+                                .withValues(alpha: 0.45),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      l10n.totalPrice,
+                                      style: theme.textTheme.titleMedium
+                                          ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                'Total Price',
-                                                style: theme.textTheme.titleMedium?.copyWith(
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                'Your order total',
-                                                style: theme.textTheme.bodySmall?.copyWith(
-                                                  color: theme.colorScheme.onSurfaceVariant,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          '\$${cartController.totalPrice.toStringAsFixed(2)}',
-                                          style: theme.textTheme.headlineSmall?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                            color: theme.colorScheme.primary,
-                                          ),
-                                        ),
-                                      ],
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      l10n.yourOrderTotal,
+                                      style:
+                                          theme.textTheme.bodySmall?.copyWith(
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                      ),
                                     ),
-                                  ),
-
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                '\$${cartController.totalPrice.toStringAsFixed(2)}',
+                                style:
+                                    theme.textTheme.headlineSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.colorScheme.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                         const SizedBox(height: 18),
                         SizedBox(
                           width: double.infinity,
                           child: FilledButton.icon(
-                           onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => const CheckoutScreen(),
-                                  ),
-                                );
-                              },
-                            icon: const Icon(Icons.shopping_bag_outlined),
-                            label: const Text('Proceed to Checkout'),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const CheckoutScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(
+                              Icons.shopping_bag_outlined,
+                            ),
+                            label: Text(l10n.proceedToCheckout),
                             style: FilledButton.styleFrom(
                               padding: const EdgeInsets.symmetric(
                                 vertical: 16,

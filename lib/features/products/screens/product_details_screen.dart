@@ -1,6 +1,9 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/products/screens/cart_screen.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
+
 import '../models/product_model.dart';
 import '../providers/cart_provider.dart';
 import '../providers/wishlist_provider.dart';
@@ -16,17 +19,19 @@ class ProductDetailsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
     final wishlistIds = ref.watch(wishlistProvider);
     final isWishlisted = wishlistIds.contains(product.id);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Product Details'),
+        title: Text(l10n.productDetails),
         actions: [
           IconButton(
             tooltip: isWishlisted
-                ? 'Remove from Wishlist'
-                : 'Add to Wishlist',
+                ? l10n.removeFromWishlist
+                : l10n.addToWishlist,
             onPressed: () {
               ref
                   .read(wishlistProvider.notifier)
@@ -38,8 +43,8 @@ class ProductDetailsScreen extends ConsumerWidget {
                   SnackBar(
                     content: Text(
                       isWishlisted
-                          ? 'Removed from wishlist'
-                          : 'Added to wishlist',
+                          ? l10n.removedFromWishlist
+                          : l10n.addedToWishlist,
                     ),
                     duration: const Duration(seconds: 1),
                   ),
@@ -140,7 +145,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                   ),
                 ),
                 Text(
-                  '(${product.ratingCount} ratings)',
+                  '(${product.ratingCount} ${l10n.ratings})',
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -163,7 +168,7 @@ class ProductDetailsScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Price',
+                    l10n.price,
                     style: theme.textTheme.titleSmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -183,7 +188,7 @@ class ProductDetailsScreen extends ConsumerWidget {
             const SizedBox(height: 28),
 
             Text(
-              'Product Description',
+              l10n.productDescription,
               style: theme.textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
@@ -212,24 +217,22 @@ class ProductDetailsScreen extends ConsumerWidget {
                     ..hideCurrentSnackBar()
                     ..showSnackBar(
                       SnackBar(
-                        content: const Text(
-                          'Product added to cart!',
-                        ),
+                        content: Text(l10n.productAddedToCart),
                         action: SnackBarAction(
-                          label: 'View Cart',
+                          label: l10n.viewCart,
                           onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const CartScreen(),
-                            ),
-                          );
-                        },
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const CartScreen(),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     );
                 },
                 icon: const Icon(Icons.shopping_cart_outlined),
-                label: const Text('Add to Cart'),
+                label: Text(l10n.addToCart),
                 style: FilledButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 17),
                   textStyle: const TextStyle(

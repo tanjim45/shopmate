@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
 import 'package:shopmate/features/products/screens/profile_screen.dart';
 import 'package:shopmate/features/products/providers/cart_provider.dart';
 import 'package:shopmate/features/products/screens/cart_screen.dart';
@@ -59,6 +60,7 @@ class _ProductListScreenState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final paginationState = ref.watch(productsPaginationProvider);
     final cartItems = ref.watch(cartProvider);
     final wishlistIds = ref.watch(wishlistProvider);
@@ -138,7 +140,7 @@ class _ProductListScreenState
         ),
         actions: [
            IconButton(
-            tooltip: 'My Profile',
+            tooltip: l10n.myProfile,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -150,7 +152,7 @@ class _ProductListScreenState
           ),
   
           IconButton(
-            tooltip: 'My Orders',
+            tooltip: l10n.myOrders,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -163,7 +165,7 @@ class _ProductListScreenState
 
 
           IconButton(
-            tooltip: 'My Wishlist',
+            tooltip: l10n.myWishlist,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -180,7 +182,7 @@ class _ProductListScreenState
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: IconButton(
-              tooltip: 'My Cart',
+              tooltip: l10n.myCart,
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -215,7 +217,7 @@ class _ProductListScreenState
                         ),
                         const SizedBox(height: 12),
                        Text(
-                              'Oops! Could not load products.',
+                              l10n.loadProductsError,
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -223,7 +225,7 @@ class _ProductListScreenState
                             ),
                             const SizedBox(height: 8),
                             Text(
-                              'Please check your internet connection and try again.',
+                              l10n.checkInternet,
                               textAlign: TextAlign.center,
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
@@ -235,7 +237,7 @@ class _ProductListScreenState
                                 .retry();
                           },
                           icon: const Icon(Icons.refresh),
-                          label: const Text('Try Again'),
+                          label: Text(l10n.tryAgain),
                         ),
                       ],
                     ),
@@ -259,7 +261,7 @@ class _ProductListScreenState
                           });
                         },
                         decoration: InputDecoration(
-                          hintText: 'Search products...',
+                          hintText: l10n.searchProducts,
                           prefixIcon: const Icon(Icons.search),
                           suffixIcon: _searchQuery.isNotEmpty
                               ? IconButton(
@@ -294,7 +296,7 @@ class _ProductListScreenState
                         children: [
                           const Icon(Icons.sort),
                           const SizedBox(width: 8),
-                          const Text('Sort by:'),
+                          Text(l10n.sortBy),
                           const SizedBox(width: 12),
                           Expanded(
                             child: DropdownButtonFormField<String>(
@@ -311,32 +313,26 @@ class _ProductListScreenState
                                       BorderRadius.circular(12),
                                 ),
                               ),
-                              items: const [
+                              items: [
                                 DropdownMenuItem(
                                   value: 'Default',
-                                  child: Text('Default'),
+                                  child: Text(l10n.defaultSort),
                                 ),
                                 DropdownMenuItem(
                                   value: 'Price: Low to High',
-                                  child: Text(
-                                    'Price: Low to High',
-                                  ),
+                                  child: Text(l10n.priceLowHigh),
                                 ),
                                 DropdownMenuItem(
                                   value: 'Price: High to Low',
-                                  child: Text(
-                                    'Price: High to Low',
-                                  ),
+                                  child: Text(l10n.priceHighLow),
                                 ),
                                 DropdownMenuItem(
                                   value: 'Rating: Highest First',
-                                  child: Text(
-                                    'Rating: Highest First',
-                                  ),
+                                  child: Text(l10n.ratingHighest),
                                 ),
                                 DropdownMenuItem(
                                   value: 'Name: A to Z',
-                                  child: Text('Name: A to Z'),
+                                  child: Text(l10n.nameAZ),
                                 ),
                               ],
                               onChanged: (value) {
@@ -367,8 +363,8 @@ class _ProductListScreenState
                                   const TextInputType.numberWithOptions(
                                 decimal: true,
                               ),
-                              decoration: const InputDecoration(
-                                labelText: 'Min Price',
+                              decoration: InputDecoration(
+                                labelText: l10n.minPrice,
                                 prefixText: '\$ ',
                                 border: OutlineInputBorder(),
                               ),
@@ -382,8 +378,8 @@ class _ProductListScreenState
                                   const TextInputType.numberWithOptions(
                                 decimal: true,
                               ),
-                              decoration: const InputDecoration(
-                                labelText: 'Max Price',
+                              decoration: InputDecoration(
+                                labelText: l10n.maxPrice,
                                 prefixText: '\$ ',
                                 border: OutlineInputBorder(),
                               ),
@@ -391,7 +387,7 @@ class _ProductListScreenState
                           ),
                           const SizedBox(width: 8),
                           IconButton.filled(
-                            tooltip: 'Apply Price Filter',
+                            tooltip: l10n.applyPriceFilter,
                             onPressed: () {
                               final minText =
                                   _minPriceController.text.trim();
@@ -407,17 +403,14 @@ class _ProductListScreenState
 
                               if (minText.isNotEmpty &&
                                   (min == null || min < 0)) {
-                                error =
-                                    'Enter a valid minimum price.';
+                                error = l10n.validMinPrice;
                               } else if (maxText.isNotEmpty &&
                                   (max == null || max < 0)) {
-                                error =
-                                    'Enter a valid maximum price.';
+                                error = l10n.validMaxPrice;
                               } else if (min != null &&
                                   max != null &&
                                   min > max) {
-                                error =
-                                    'Minimum price cannot exceed maximum price.';
+                                error = l10n.minPriceExceedsMax;
                               }
 
                               setState(() {
@@ -435,7 +428,7 @@ class _ProductListScreenState
                                 _priceFilterError = null;
                               });
                             },
-                            child: const Text('Reset'),
+                            child: Text(l10n.reset),
                           ),
                         ],
                       ),
@@ -479,7 +472,7 @@ class _ProductListScreenState
                           return ChoiceChip(
                             label: Text(
                               category == 'All'
-                                  ? 'All'
+                                  ? l10n.allCategories
                                   : '${category[0].toUpperCase()}${category.substring(1)}',
                             ),
                             selected:
@@ -513,8 +506,8 @@ class _ProductListScreenState
                                 const SizedBox(height: 16),
                                 Text(
                                   products.isEmpty
-                                      ? 'No products available'
-                                      : 'No products found',
+                                      ? l10n.noProductsAvailable
+                                      : l10n.noProductsFound,
                                   style: Theme.of(context)
                                       .textTheme
                                       .titleMedium,
@@ -522,8 +515,8 @@ class _ProductListScreenState
                                 const SizedBox(height: 8),
                                 Text(
                                   products.isEmpty
-                                      ? 'Please try again later.'
-                                      : 'Try another search or change filters.',
+                                      ? l10n.tryAgainLater
+                                      : l10n.changeSearchFilters,
                                   textAlign: TextAlign.center,
                                   style: Theme.of(context)
                                       .textTheme
@@ -535,11 +528,11 @@ class _ProductListScreenState
                                     onPressed: () {
                                       _searchController.clear();
                                       setState(() {
-                                        // Search text reset
+                                        _searchQuery = '';
                                       });
                                     },
                                     icon: const Icon(Icons.refresh),
-                                    label: const Text('Clear Search'),
+                                    label: Text(l10n.clearSearch),
                                   ),
                                 ],
                               ],
@@ -585,10 +578,9 @@ class _ProductListScreenState
                                           mainAxisSize:
                                               MainAxisSize.min,
                                           children: [
-                                            const Text(
-                                              'Could not load more products',
-                                              textAlign:
-                                                  TextAlign.center,
+                                            Text(
+                                              l10n.loadMoreError,
+                                              textAlign: TextAlign.center,
                                             ),
                                             TextButton.icon(
                                               onPressed: () {
@@ -602,9 +594,7 @@ class _ProductListScreenState
                                               icon: const Icon(
                                                 Icons.refresh,
                                               ),
-                                              label: const Text(
-                                                'Retry',
-                                              ),
+                                              label: Text(l10n.retry),
                                             ),
                                           ],
                                         ),
@@ -645,6 +635,7 @@ class ProductCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     final isFavorite = ref.watch(
@@ -699,8 +690,8 @@ class ProductCard extends ConsumerWidget {
                         shape: const CircleBorder(),
                         child: IconButton(
                           tooltip: isFavorite
-                              ? 'Remove from Wishlist'
-                              : 'Add to Wishlist',
+                              ? l10n.removeFromWishlist
+                              : l10n.addToWishlist,
                           visualDensity: VisualDensity.compact,
                           onPressed: () {
                             ref
@@ -715,8 +706,8 @@ class ProductCard extends ConsumerWidget {
                                       const Duration(seconds: 1),
                                   content: Text(
                                     isFavorite
-                                        ? 'Removed from Wishlist'
-                                        : 'Added to Wishlist',
+                                        ? l10n.removedFromWishlist
+                                        : l10n.addedToWishlist,
                                   ),
                                 ),
                               );

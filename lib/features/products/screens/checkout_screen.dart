@@ -1,9 +1,11 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/products/screens/order_success_screen.dart';
 import 'package:shopmate/features/products/services/address_service.dart';
 import 'package:shopmate/features/products/services/order_service.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
 
 import '../models/order_model.dart';
 import '../providers/cart_provider.dart';
@@ -18,7 +20,6 @@ class CheckoutScreen extends ConsumerStatefulWidget {
 class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  // New delivery address controllers
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _divisionController = TextEditingController();
@@ -50,10 +51,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       setState(() {
         _permanentAddress = address;
-
-        // Permanent address থাকলে checkbox default checked থাকবে
         _usePermanentAddress = address != null;
-
         _isLoadingAddress = false;
       });
     } catch (e) {
@@ -65,9 +63,11 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         _isLoadingAddress = false;
       });
 
+      final l10n = AppLocalizations.of(context)!;
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not load permanent address: $e'),
+          content: Text('${l10n.permanentAddressLoadError}: $e'),
         ),
       );
     }
@@ -92,7 +92,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   }
 
   Future<void> _placeOrder() async {
-    // নতুন address ব্যবহার করলে form validation হবে
+    final l10n = AppLocalizations.of(context)!;
+
     if (!_usePermanentAddress) {
       if (!_formKey.currentState!.validate()) return;
     }
@@ -105,14 +106,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please login before placing an order.'),
+        SnackBar(
+          content: Text(l10n.loginBeforeOrder),
         ),
       );
       return;
     }
 
-    // Permanent address অথবা নতুন delivery address নির্বাচন
     final String customerName;
     final String phone;
     final String deliveryAddress;
@@ -120,8 +120,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     if (_usePermanentAddress) {
       if (_permanentAddress == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Permanent address not found.'),
+          SnackBar(
+            content: Text(l10n.permanentAddressNotFound),
           ),
         );
         return;
@@ -169,7 +169,6 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         items: orderItems,
       );
 
-      // শুধু order save হবে; permanent address পরিবর্তন হবে না।
       await OrderService().saveOrder(order);
 
       if (!mounted) return;
@@ -186,7 +185,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to place order: $e'),
+          content: Text('${l10n.orderPlaceFailed}: $e'),
           backgroundColor: Colors.red,
         ),
       );
@@ -215,6 +214,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     TextInputType keyboardType = TextInputType.text,
     String? Function(String?)? validator,
   }) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: TextFormField(
@@ -231,7 +232,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         validator: validator ??
             (value) {
               if (value == null || value.trim().isEmpty) {
-                return 'Please enter $label';
+                return '${l10n.pleaseEnter} $label';
               }
               return null;
             },
@@ -241,6 +242,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   Widget _buildPermanentAddressCard() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     final address = _permanentAddress!;
 
     return Container(
@@ -263,10 +265,10 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 color: theme.colorScheme.primary,
               ),
               const SizedBox(width: 8),
-              const Expanded(
+              Expanded(
                 child: Text(
-                  'Permanent Address',
-                  style: TextStyle(
+                  l10n.permanentAddress,
+                  style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
@@ -287,29 +289,31 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
           const SizedBox(height: 5),
           Text(_formatAddress(address)),
           const SizedBox(height: 5),
-          Text('Mobile: ${address['phone'] ?? ''}'),
+          Text('${l10n.mobile}: ${address['phone'] ?? ''}'),
         ],
       ),
     );
   }
 
   Widget _buildAddressForm() {
+    final l10n = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         _addressField(
-          label: 'Full Name',
+          label: l10n.fullName,
           icon: Icons.person_outline,
           controller: _nameController,
           validator: (value) {
             if (value == null || value.trim().length < 2) {
-              return 'Enter your full name';
+              return l10n.enterFullName;
             }
             return null;
           },
         ),
         _addressField(
-          label: 'Mobile Number',
+          label: l10n.mobileNumber,
           icon: Icons.phone_outlined,
           controller: _phoneController,
           keyboardType: TextInputType.phone,
@@ -317,28 +321,28 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
             final phone = value?.trim() ?? '';
 
             if (!RegExp(r'^[0-9+\-\s]{10,15}$').hasMatch(phone)) {
-              return 'Enter a valid mobile number';
+              return l10n.validMobileNumber;
             }
             return null;
           },
         ),
         _addressField(
-          label: 'Division',
+          label: l10n.division,
           icon: Icons.map_outlined,
           controller: _divisionController,
         ),
         _addressField(
-          label: 'City',
+          label: l10n.city,
           icon: Icons.location_city_outlined,
           controller: _cityController,
         ),
         _addressField(
-          label: 'Area Name',
+          label: l10n.areaName,
           icon: Icons.location_on_outlined,
           controller: _areaController,
         ),
         _addressField(
-          label: 'House No. / House Name',
+          label: l10n.houseNumber,
           icon: Icons.home_outlined,
           controller: _houseController,
         ),
@@ -348,6 +352,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     final cartItems = ref.watch(cartProvider);
     final cartController = ref.read(cartProvider.notifier);
     final theme = Theme.of(context);
@@ -358,9 +364,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Checkout',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.checkout,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
       body: cartItems.isEmpty
@@ -374,9 +380,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     color: theme.colorScheme.primary,
                   ),
                   const SizedBox(height: 16),
-                  const Text(
-                    'Your cart is empty',
-                    style: TextStyle(
+                  Text(
+                    l10n.cartEmpty,
+                    style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
@@ -384,7 +390,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                   const SizedBox(height: 12),
                   FilledButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Go Back'),
+                    child: Text(l10n.goBack),
                   ),
                 ],
               ),
@@ -397,14 +403,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     padding: const EdgeInsets.all(20),
                     children: [
                       Text(
-                        'Delivery Information',
+                        l10n.deliveryInformation,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 16),
 
-                      // Same as Permanent Address checkbox
                       if (_permanentAddress != null) ...[
                         CheckboxListTile(
                           value: _usePermanentAddress,
@@ -415,15 +420,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           },
                           contentPadding: EdgeInsets.zero,
                           controlAffinity: ListTileControlAffinity.leading,
-                          title: const Text(
-                            'Same as Permanent Address',
-                            style: TextStyle(
+                          title: Text(
+                            l10n.sameAsPermanentAddress,
+                            style: const TextStyle(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          subtitle: const Text(
-                            'Use your saved permanent address for delivery',
-                          ),
+                          subtitle: Text(l10n.useSavedAddress),
                         ),
                         const SizedBox(height: 8),
                       ],
@@ -433,7 +436,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         _buildPermanentAddressCard()
                       else ...[
                         Text(
-                          'Delivery Address',
+                          l10n.deliveryAddress,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontWeight: FontWeight.bold,
                           ),
@@ -445,7 +448,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       const SizedBox(height: 28),
 
                       Text(
-                        'Delivery Method',
+                        l10n.deliveryMethod,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -464,16 +467,16 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           children: [
                             RadioListTile<String>(
                               value: 'Standard Delivery',
-                              title: const Text('Standard Delivery'),
-                              subtitle: const Text('3–5 business days'),
+                              title: Text(l10n.standardDelivery),
+                              subtitle: Text(l10n.businessDays35),
                               secondary: const Icon(
                                 Icons.local_shipping_outlined,
                               ),
                             ),
                             RadioListTile<String>(
                               value: 'Express Delivery',
-                              title: const Text('Express Delivery'),
-                              subtitle: const Text('1–2 business days'),
+                              title: Text(l10n.expressDelivery),
+                              subtitle: Text(l10n.businessDays12),
                               secondary: const Icon(
                                 Icons.bolt_outlined,
                               ),
@@ -485,7 +488,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       const SizedBox(height: 24),
 
                       Text(
-                        'Order Summary',
+                        l10n.orderSummary,
                         style: theme.textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.bold,
                         ),
@@ -502,24 +505,24 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                         child: Column(
                           children: [
                             _summaryRow(
-                              'Total Items',
+                              l10n.totalItems,
                               '${cartController.totalQuantity}',
                             ),
                             const SizedBox(height: 12),
                             _summaryRow(
-                              'Subtotal',
+                              l10n.subtotal,
                               '\$${subtotal.toStringAsFixed(2)}',
                             ),
                             const SizedBox(height: 12),
                             _summaryRow(
-                              'Delivery Fee',
+                              l10n.deliveryFee,
                               cartItems.isEmpty
                                   ? '\$0.00'
                                   : '\$${deliveryFee.toStringAsFixed(2)}',
                             ),
                             const Divider(height: 28),
                             _summaryRow(
-                              'Total',
+                              l10n.total,
                               '\$${total.toStringAsFixed(2)}',
                               isTotal: true,
                             ),
@@ -537,8 +540,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                           icon: const Icon(Icons.check_circle_outline),
                           label: Text(
                             _isPlacingOrder
-                                ? 'Placing Order...'
-                                : 'Place Order',
+                                ? l10n.placingOrder
+                                : l10n.placeOrder,
                           ),
                           style: FilledButton.styleFrom(
                             padding: const EdgeInsets.symmetric(

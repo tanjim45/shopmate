@@ -6,9 +6,6 @@ import 'package:shopmate/features/auth/app_theme.dart';
 import 'package:shopmate/features/auth/theme_provider.dart';
 import 'package:shopmate/features/auth/language_provider.dart';
 import 'package:shopmate/l10n/app_localizations.dart';
-
-
-
 import 'features/auth/auth_gate.dart';
 import 'firebase_options.dart';
 

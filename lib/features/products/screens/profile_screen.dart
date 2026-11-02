@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/auth/app_theme.dart';
+import 'package:shopmate/features/auth/auth_gate.dart';
 import 'package:shopmate/l10n/app_localizations.dart';
 import '../../auth/theme_provider.dart';
 import '../../auth/language_provider.dart';
@@ -13,7 +14,7 @@ import '../services/address_service.dart';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _logout(BuildContext context) async {
+Future<void> _logout(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
 
   final shouldLogout = await showDialog<bool>(
@@ -63,24 +64,29 @@ class ProfileScreen extends ConsumerWidget {
   if (shouldLogout != true || !context.mounted) return;
 
   try {
-  await FirebaseAuth.instance.signOut();
+    await FirebaseAuth.instance.signOut();
 
-  if (!context.mounted) return;
+    if (!context.mounted) return;
 
-  Navigator.of(context).popUntil(
-    (route) => route.isFirst,
-  );
-} catch (e) {
-  if (!context.mounted) return;
+    Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const AuthGate(),
+      ),
+      (route) => false,
+    );
+  } catch (e) {
+    if (!context.mounted) return;
 
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('Logout failed: $e'),
-      backgroundColor: AppColors.danger,
-    ),
-  );
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Logout failed: $e'),
+        backgroundColor: AppColors.danger,
+      ),
+    );
+  }
 }
-}
+
+
   Future<void> _showAppearanceSettings(
     BuildContext context,
     WidgetRef ref,

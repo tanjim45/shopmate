@@ -1,5 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:shopmate/features/products/models/order_model.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
 
 class OrderDetailsScreen extends StatelessWidget {
   final OrderModel order;
@@ -21,18 +23,32 @@ class OrderDetailsScreen extends StatelessWidget {
     return '$day/$month/$year  $hour:$minute';
   }
 
+  String _localizedDeliveryMethod(
+    String method,
+    AppLocalizations l10n,
+  ) {
+    if (method == 'Standard Delivery') return l10n.standardDelivery;
+    if (method == 'Express Delivery') return l10n.expressDelivery;
+    return method;
+  }
+
+  String _localizedStatus(String status, AppLocalizations l10n) {
+    if (status == 'Placed') return l10n.placed;
+    return status;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order #${order.id ?? '-'}'),
+        title: Text('${l10n.orderNumber} #${order.id ?? '-'}'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Order Status
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -48,15 +64,15 @@ class OrderDetailsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Order Status',
-                          style: TextStyle(
+                        Text(
+                          l10n.orderStatus,
+                          style: const TextStyle(
                             fontWeight: FontWeight.w600,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
-                          order.status,
+                          _localizedStatus(order.status, l10n),
                           style: TextStyle(
                             color: theme.colorScheme.primary,
                             fontSize: 18,
@@ -73,46 +89,47 @@ class OrderDetailsScreen extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Order Information
           _sectionCard(
             context,
-            title: 'Order Information',
+            title: l10n.orderInformation,
             icon: Icons.receipt_long_outlined,
             children: [
-              _detailRow(context, 'Order ID', '#${order.id ?? '-'}'),
               _detailRow(
                 context,
-                'Order Date',
+                l10n.orderId,
+                '#${order.id ?? '-'}',
+              ),
+              _detailRow(
+                context,
+                l10n.orderDate,
                 _formatDate(order.createdAt),
               ),
               _detailRow(
                 context,
-                'Delivery Method',
-                order.deliveryMethod,
+                l10n.deliveryMethod,
+                _localizedDeliveryMethod(order.deliveryMethod, l10n),
               ),
             ],
           ),
 
           const SizedBox(height: 16),
 
-          // Customer Information
           _sectionCard(
             context,
-            title: 'Customer Information',
+            title: l10n.customerInformation,
             icon: Icons.person_outline,
             children: [
-              _detailRow(context, 'Name', order.customerName),
-              _detailRow(context, 'Phone', order.phone),
-              _detailRow(context, 'Address', order.address),
+              _detailRow(context, l10n.name, order.customerName),
+              _detailRow(context, l10n.phone, order.phone),
+              _detailRow(context, l10n.address, order.address),
             ],
           ),
 
           const SizedBox(height: 16),
 
-          // Ordered Products
           _sectionCard(
             context,
-            title: 'Ordered Products (${order.items.length})',
+            title: '${l10n.orderedProducts} (${order.items.length})',
             icon: Icons.shopping_bag_outlined,
             children: [
               ...order.items.map(
@@ -175,26 +192,25 @@ class OrderDetailsScreen extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Payment Summary
           _sectionCard(
             context,
-            title: 'Payment Summary',
+            title: l10n.paymentSummary,
             icon: Icons.payments_outlined,
             children: [
               _detailRow(
                 context,
-                'Subtotal',
+                l10n.subtotal,
                 '\$${order.subtotal.toStringAsFixed(2)}',
               ),
               _detailRow(
                 context,
-                'Delivery Fee',
+                l10n.deliveryFee,
                 '\$${order.deliveryFee.toStringAsFixed(2)}',
               ),
               const Divider(height: 24),
               _detailRow(
                 context,
-                'Total Amount',
+                l10n.totalAmount,
                 '\$${order.total.toStringAsFixed(2)}',
                 isBold: true,
               ),
@@ -206,7 +222,7 @@ class OrderDetailsScreen extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back),
-            label: const Text('Back to My Orders'),
+            label: Text(l10n.backToMyOrders),
           ),
 
           const SizedBox(height: 16),

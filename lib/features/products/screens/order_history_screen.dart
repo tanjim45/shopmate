@@ -1,8 +1,9 @@
+
 import 'package:flutter/material.dart';
+import 'package:shopmate/l10n/app_localizations.dart';
 import 'package:shopmate/features/products/models/order_model.dart';
 import 'package:shopmate/features/products/screens/order_details_screen.dart';
 import 'package:shopmate/features/products/services/order_service.dart';
-
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -51,19 +52,43 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     );
   }
 
+  String _localizedDeliveryMethod(
+    String method,
+    AppLocalizations l10n,
+  ) {
+    if (method == 'Standard Delivery') {
+      return l10n.standardDelivery;
+    }
+
+    if (method == 'Express Delivery') {
+      return l10n.expressDelivery;
+    }
+
+    return method;
+  }
+
+  String _localizedStatus(String status, AppLocalizations l10n) {
+    if (status == 'Placed') {
+      return l10n.placed;
+    }
+
+    return status;
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'My Orders',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: Text(
+          l10n.myOrders,
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            tooltip: 'Refresh orders',
+            tooltip: l10n.refreshOrders,
             onPressed: _refreshOrders,
             icon: const Icon(Icons.refresh),
           ),
@@ -91,15 +116,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       color: Colors.red,
                     ),
                     const SizedBox(height: 12),
-                    const Text(
-                      'Could not load orders.',
-                      style: TextStyle(fontSize: 17),
+                    Text(
+                      l10n.couldNotLoadOrders,
+                      style: const TextStyle(fontSize: 17),
                     ),
                     const SizedBox(height: 12),
                     FilledButton.icon(
                       onPressed: _refreshOrders,
                       icon: const Icon(Icons.refresh),
-                      label: const Text('Try Again'),
+                      label: Text(l10n.tryAgain),
                     ),
                   ],
                 ),
@@ -122,16 +147,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       color: theme.colorScheme.primary,
                     ),
                     const SizedBox(height: 16),
-                    const Text(
-                      'No Orders Yet',
-                      style: TextStyle(
+                    Text(
+                      l10n.noOrdersYet,
+                      style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'Your placed orders will appear here.',
+                      l10n.placedOrdersAppear,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: theme.colorScheme.onSurfaceVariant,
@@ -140,7 +165,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     const SizedBox(height: 20),
                     FilledButton(
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Continue Shopping'),
+                      child: Text(l10n.continueShopping),
                     ),
                   ],
                 ),
@@ -169,7 +194,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                       ),
                     ),
                     title: Text(
-                      'Order #${order.id ?? '-'}',
+                      '${l10n.orderNumber} #${order.id ?? '-'}',
                       style: const TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -182,7 +207,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           Text(_formatDate(order.createdAt)),
                           const SizedBox(height: 5),
                           Text(
-                            '${order.items.length} product type(s) • '
+                            '${order.items.length} ${l10n.productTypes} • '
                             '\$${order.total.toStringAsFixed(2)}',
                             style: TextStyle(
                               color: theme.colorScheme.primary,
@@ -192,14 +217,11 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         ],
                       ),
                     ),
-
-                    // Details button; expansion behavior remains unchanged.
                     trailing: IconButton(
-                      tooltip: 'View Order Details',
+                      tooltip: l10n.viewOrderDetails,
                       icon: const Icon(Icons.open_in_new),
                       onPressed: () => _openOrderDetails(order),
                     ),
-
                     children: [
                       const Divider(height: 1),
                       Padding(
@@ -207,17 +229,35 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _detailRow('Customer', order.customerName),
-                            _detailRow('Phone', order.phone),
-                            _detailRow('Address', order.address),
-                            _detailRow('Delivery', order.deliveryMethod),
-                            _detailRow('Status', order.status),
+                            _detailRow(
+                              l10n.customer,
+                              order.customerName,
+                            ),
+                            _detailRow(
+                              l10n.phone,
+                              order.phone,
+                            ),
+                            _detailRow(
+                              l10n.address,
+                              order.address,
+                            ),
+                            _detailRow(
+                              l10n.delivery,
+                              _localizedDeliveryMethod(
+                                order.deliveryMethod,
+                                l10n,
+                              ),
+                            ),
+                            _detailRow(
+                              l10n.status,
+                              _localizedStatus(order.status, l10n),
+                            ),
 
                             const SizedBox(height: 12),
 
-                            const Text(
-                              'Products',
-                              style: TextStyle(
+                            Text(
+                              l10n.products,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -279,15 +319,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                             const Divider(),
 
                             _detailRow(
-                              'Subtotal',
+                              l10n.subtotal,
                               '\$${order.subtotal.toStringAsFixed(2)}',
                             ),
                             _detailRow(
-                              'Delivery Fee',
+                              l10n.deliveryFee,
                               '\$${order.deliveryFee.toStringAsFixed(2)}',
                             ),
                             _detailRow(
-                              'Total',
+                              l10n.total,
                               '\$${order.total.toStringAsFixed(2)}',
                               isBold: true,
                             ),
@@ -299,7 +339,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                               child: FilledButton.icon(
                                 onPressed: () => _openOrderDetails(order),
                                 icon: const Icon(Icons.open_in_new),
-                                label: const Text('View Full Details'),
+                                label: Text(l10n.viewFullDetails),
                               ),
                             ),
                           ],
