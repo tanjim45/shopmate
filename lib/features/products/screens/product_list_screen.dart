@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shopmate/features/auth/profile_screen.dart';
+import 'package:shopmate/features/products/screens/profile_screen.dart';
 import 'package:shopmate/features/products/providers/cart_provider.dart';
 import 'package:shopmate/features/products/screens/cart_screen.dart';
 import 'package:shopmate/features/products/screens/order_history_screen.dart';

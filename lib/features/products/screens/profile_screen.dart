@@ -3,68 +3,84 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shopmate/features/auth/app_theme.dart';
 import 'package:shopmate/l10n/app_localizations.dart';
-import 'theme_provider.dart';
-import 'language_provider.dart';
-import '../products/screens/cart_screen.dart';
-import '../products/screens/order_history_screen.dart';
-import '../products/screens/wishlist_screen.dart';
-import '../products/services/address_service.dart';
+import '../../auth/theme_provider.dart';
+import '../../auth/language_provider.dart';
+import 'cart_screen.dart';
+import 'order_history_screen.dart';
+import 'wishlist_screen.dart';
+import '../services/address_service.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   Future<void> _logout(BuildContext context) async {
-    final l10n = AppLocalizations.of(context)!;
+  final l10n = AppLocalizations.of(context)!;
 
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          icon: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.danger.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.logout_rounded,
-              size: 30,
-              color: AppColors.danger,
-            ),
+  final shouldLogout = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        icon: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.danger.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
           ),
-          title: Text(l10n.logOutQuestion),
-          content: Text(
-            l10n.logoutConfirmation,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: AppColors.textMuted,
-              height: 1.5,
-            ),
+          child: const Icon(
+            Icons.logout_rounded,
+            size: 30,
+            color: AppColors.danger,
           ),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext, false),
-              child: Text(l10n.no),
+        ),
+        title: Text(l10n.logOutQuestion),
+        content: Text(
+          l10n.logoutConfirmation,
+          textAlign: TextAlign.center,
+          style: const TextStyle(
+            color: AppColors.textMuted,
+            height: 1.5,
+          ),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.no),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: AppColors.danger,
+              minimumSize: const Size(130, 46),
             ),
-            FilledButton(
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.danger,
-                minimumSize: const Size(130, 46),
-              ),
-              onPressed: () => Navigator.pop(dialogContext, true),
-              child: Text(l10n.yesLogout),
-            ),
-          ],
-        );
-      },
-    );
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.yesLogout),
+          ),
+        ],
+      );
+    },
+  );
 
-    if (shouldLogout != true || !context.mounted) return;
+  if (shouldLogout != true || !context.mounted) return;
 
-    await FirebaseAuth.instance.signOut();
-  }
+  try {
+  await FirebaseAuth.instance.signOut();
 
+  if (!context.mounted) return;
+
+  Navigator.of(context).popUntil(
+    (route) => route.isFirst,
+  );
+} catch (e) {
+  if (!context.mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text('Logout failed: $e'),
+      backgroundColor: AppColors.danger,
+    ),
+  );
+}
+}
   Future<void> _showAppearanceSettings(
     BuildContext context,
     WidgetRef ref,

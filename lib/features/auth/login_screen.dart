@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shopmate/features/auth/app_theme.dart';
 import 'package:shopmate/features/products/screens/product_list_screen.dart';
-import 'signup_screen.dart';
+import '../products/screens/signup_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
